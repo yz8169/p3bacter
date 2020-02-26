@@ -1,0 +1,37 @@
+@()
+<script src="@routes.Assets.at("bootstrap/js/jquery-3.1.1.min.js")" type="text/javascript"></script>
+<body style="margin: 0px 0px 0px 0px;
+	padding: 0px" >
+</body>
+<script>
+		$(function () {
+		    $("body").bind("DOMNodeInserted",function (e) {
+			    $("footer:first").remove()
+			    $("#content").css("margin", "0")
+			    $(".linkheader>a").each(function () {
+				    var text = $(this).text()
+				    $(this).replaceWith("<span style='color: #222222;'>" + text + "</span>")
+			    })
+
+			    $("tr").each(function () {
+				    var a = $(this).find("td>a:last")
+				    var text = a.text()
+				    a.replaceWith("<span style='color: #222222;'>" + text + "</span>")
+			    })
+
+			    $("p.titleinfo>a").each(function () {
+				    var text = $(this).text()
+				    $(this).replaceWith("<span style='color: #606060;'>" + text + "</span>")
+			    })
+
+			    $(".param:eq(1)").parent().hide()
+			    $(".linkheader").hide()
+		    })
+
+
+
+		})
+
+
+</script>
+

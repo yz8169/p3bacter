@@ -1,0 +1,108 @@
+@()
+@admin.main("基因组管理(浏览、删除)") {
+
+	<div class="container">
+
+		<div class="row">
+			<div class="form-group col-sm-12">
+				<h2 class="page-heading"
+				style="text-align: left;
+					border-bottom: 5px solid #e9f3f4">基因组管理(浏览、删除)</h2>
+			</div>
+		</div>
+
+		<label>选择显示的列:</label>
+		<div id="checkbox" class="checkbox">
+
+		</div>
+
+		<table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
+		data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100, all]" data-multiple-search="true">
+			<thead>
+				<tr>
+					<th data-field="operate">操作</th>
+					<th data-field="samplename" data-sortable="true">样品编号</th>
+					<th data-field="organism" data-sortable="true">种名</th>
+					<th data-field="length" data-sortable="true">基因组长度</th>
+					<th data-field="definition" data-sortable="true">描述</th>
+					<th data-field="taxonomy" data-formatter="taxnomyFmt" data-sortable="true">分类学信息</th>
+				</tr>
+			</thead>
+		</table>
+
+
+	</div>
+
+	<script>
+
+			function taxnomyFmt(value, row, index) {
+				return value.replace(/,/g, ";&nbsp;")
+			}
+
+			$(function () {
+				var array = ["种名", "基因组长度", "描述", "分类学信息"]
+				var values = ["organism", "length", "definition", "taxonomy"]
+				var html = ""
+				$.each(array, function (n, value) {
+							html += "<label style='margin-right: 15px'>" +
+									"<input type='checkbox' checked='checked' value='" + values[n] + "' onclick=\"setColumns('" + values[n] + "')\">" + value +
+									"</label>"
+						}
+				);
+				$("#checkbox").append(html)
+
+				$.ajax({
+					url: "@routes.AdminController.getAllSample()",
+					type: "get",
+					dataType: "json",
+					success: function (data) {
+						$('#table').bootstrapTable({
+							data: data
+						});
+						var hideColumns = ["taxonomy"]
+						$.each(hideColumns, function (n, value) {
+							$('#table').bootstrapTable('hideColumn', value);
+							$("input:checkbox[value='" + value + "']").attr("checked", false)
+						})
+					}
+				})
+
+			})
+
+			function setColumns(value) {
+				var element = $("input:checkbox[value=" + value + "]")
+				if (element.is(":checked")) {
+					$('#table').bootstrapTable('showColumn', value);
+				} else {
+					$('#table').bootstrapTable('hideColumn', value);
+				}
+			}
+
+
+			function deleteProject(id) {
+				swal({
+							title: "",
+							text: "确认删除？",
+							type: "warning",
+							showCancelButton: true,
+							showConfirmButton: true,
+							confirmButtonClass: "btn-danger",
+							confirmButtonText: "确定",
+							closeOnConfirm: false,
+							cancelButtonText: "取消"
+						},
+						function () {
+							$.ajax({
+								url: "deleteSampleBySampleName?sampleName=" + id,
+								type: "get",
+								success: function (data) {
+									$('#table').bootstrapTable("load", data);
+									swal("成功！", "删除数据成功！", "success")
+								}
+							});
+						});
+			}
+	</script>
+
+
+}

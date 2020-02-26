@@ -1,0 +1,255 @@
+@()(implicit request: RequestHeader)
+	@user.protein.main("聚类树分析")("hCluster") {
+		<div class="page-content">
+
+			<div class="page-bar">
+				<ul class="page-breadcrumb">
+					<li>
+						<i class="fa fa-tree"></i>
+						<a href="#">聚类树分析</a>
+					</li>
+				</ul>
+			</div>
+
+
+			<div class="row-fluid">
+
+				<div class="row">
+					<div class="col-md-12 col-sm-12">
+						<div class="portlet green-jungle box">
+							<div class="portlet-title">
+								<div class="caption">
+									设置参数
+								</div>
+							</div>
+
+							<div class="portlet-body">
+
+								<form class="registration-form form-horizontal" id="form"
+								accept-charset="UTF-8" method="post">
+
+									<div id="hand">
+										<div class="form-group">
+											<label class="control-label col-sm-2">样品:</label>
+											<div class="col-sm-6" >
+												<div class="checkbox" id="sampleName">
+												</div>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<div class="actions col-sm-offset-2 col-sm-1">
+												<button type="button" class="btn btn-default" id="search" onclick="selectAll()">
+													全选</button>
+											</div>
+											<div class="actions col-sm-3">
+												<button type="button" class="btn btn-default" id="search" onclick="reverseSelect()">
+													反选</button>
+											</div>
+										</div>
+									</div>
+
+									<div class="form-group" id="paired">
+										<label class="control-label col-sm-2">
+											数据变换方法<span id="question5" style="margin-bottom: 5px">
+											<a type="button" title="说明" data-container="body" data-toggle="popover"
+											data-placement="right" data-content="预处理后的数据经过变换后，进行聚类树的计算和绘制。"
+											data-trigger="hover"><i class="fa fa-question-circle-o" ></i></a>
+										</span>:</label>
+										<div class="col-sm-4">
+											<select class="form-control" name="method" required="required" style="border-radius: 4px;">
+												<option value="none">None</option>
+												<option value="log2" selected="selected">log2_transform:
+													log2(value+1)</option>
+												<option value="log2_center">log2_transform_row_median_center:
+													scale(log2(value+1))</option>
+												<option value="center">row_median_center: scale(value)</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group" id="paired">
+										<label class="control-label col-sm-2">样品距离计算方法:</label>
+										<div class="col-sm-4">
+											<select class="form-control" name="sampleDist" required="required" id="distanceMethod">
+												<option value="euclidean" selected>euclidean</option>
+												<option value="canberra">canberra</option>
+												<option value="minkowski">minkowski</option>
+												<option value="correlation">correlation</option>
+												@*<option value="braycurtis">braycurtis</option>*@
+												@*<option value="chebyshev">chebyshev</option>*@
+												@*<option value="cityblock">cityblock</option>*@
+												@*<option value="cosine">cosine</option>*@
+												@*<option value="dice">dice</option>*@
+												@*<option value="hamming">hamming</option>*@
+												@*<option value="jaccard">jaccard</option>*@
+												@*<option value="kulsinski">kulsinski</option>*@
+												@*<option value="mahalanobis">mahalanobis</option>*@
+												@*<option value="matching">matching</option>*@
+												@*<option value="rogerstanimoto">rogerstanimoto</option>*@
+												@*<option value="russellrao">russellrao</option>*@
+												@*<option value="seuclidean">seuclidean</option>*@
+												@*<option value="sokalmichener">sokalmichener</option>*@
+												@*<option value="sokalsneath">sokalsneath</option>*@
+												@*<option value="sqeuclidean">sqeuclidean</option>*@
+												@*<option value="yule">yule</option>*@
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group" id="paired">
+										<label class="control-label col-sm-2">样品聚类方法:</label>
+										<div class="col-sm-4">
+											<select class="form-control" name="sampleCluster" required="required" style="border-radius: 4px;">
+												<option value="single">single</option>
+												<option value="complete" selected="selected">complete</option>
+												<option value="average">average</option>
+												<option value="weighted">weighted</option>
+												<option value="centroid">centroid</option>
+												<option value="median">median</option>
+												<option value="ward">ward</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group">
+										<div class="actions col-sm-offset-2 col-sm-2">
+											<button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="mySearch()">
+												运行</button>
+										</div>
+									</div>
+
+
+								</form>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div id="result" style="display: none">
+					<div class="row">
+						<div class="col-md-12 col-sm-12">
+							<div class="portlet green-jungle box">
+								<div class="portlet-title">
+									<div class="caption">
+										聚类树图
+									</div>
+									<div class="tools">
+										<a href="javascript:;" class="collapse">
+										</a>
+									</div>
+								</div>
+
+								<div class="portlet-body">
+									<div id="charts" align="center">没有图片结果生成！</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+			</div>
+
+		</div>
+
+
+		<script>
+				var originalHtml = ""
+				$(function () {
+					originalHtml = $("#tableContent").html()
+
+					$.ajax({
+						url: "@routes.ProteinController.getSampleNames()",
+						type: "get",
+						async: false,
+						success: function (data) {
+
+							var html = ""
+							$.each(data.sampleNames, function (i, v) {
+								html += "<label style='margin-right: 15px;width: 100px;padding-top: 7px;'>" +
+										"<input type='checkbox'  name='sampleNames[]'  value='" + v + "'>" + v +
+										"</label>"
+							})
+							$("#sampleName").empty().html(html);
+
+
+						}
+					})
+
+					bootstrapValidator()
+				})
+
+				function selectAll() {
+					$(":checkbox").prop("checked", true)
+					$("#form").bootstrapValidator("revalidateField", "sampleNames[]")
+				}
+
+				function reverseSelect() {
+					$(":checkbox").each(function () {
+						$(this).prop("checked", !$(this).prop("checked"));
+					});
+					$("#form").bootstrapValidator("revalidateField", "sampleNames[]")
+
+				}
+
+				function mySearch() {
+					var form = $("#form")
+					var fv = form.data("bootstrapValidator")
+					fv.validate()
+					if (fv.isValid()) {
+						var element = "<div id='content'><span id='info'>" + zhRunning + "</span>&nbsp;<img class='runningImage' src='@routes.Assets.at("images/running2.gif")' style='width: 30px;height: 20px;'></div>"
+						var index = layer.alert(element, {
+							skin: 'layui-layer-molv'
+							, closeBtn: 0,
+							title: zhInfo,
+							btn: []
+						});
+
+						$.ajax({
+							url: "@routes.ProteinController.hCluster()",
+							type: "post",
+							data: $("#form").serialize(),
+							success: function (data) {
+								layer.close(index)
+								if (data.valid == "false") {
+									$("#charts").html("没有图片结果生成！")
+									swal("错误", data.message, "error")
+									$("#result").hide()
+								} else {
+									$("#charts").html(data.div)
+									$("#result").show()
+								}
+							}
+						});
+
+					}
+
+
+				}
+
+				function bootstrapValidator() {
+					var infinityNumber = Number.MAX_VALUE
+					$('#form').bootstrapValidator({
+						feedbackIcons: {
+							valid: 'glyphicon glyphicon-ok',
+							invalid: 'glyphicon glyphicon-remove',
+							validating: 'glyphicon glyphicon-refresh'
+						},
+						fields: {
+							"sampleNames[]": {
+								validators: {
+									choice: {
+										min: 2,
+										message: '样品数量必须大于2！'
+									}
+								}
+							},
+						}
+					});
+				}
+
+		</script>
+
+	}

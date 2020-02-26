@@ -1,0 +1,374 @@
+@()(implicit request: RequestHeader)
+@main("CRISPR分析帮助文档") {
+
+	<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/site.css")">
+
+	<style>
+			h2 {
+				font-size: 20px;
+			}
+
+			.panel-body {
+				padding: 0px 15px 15px 15px;
+			}
+
+	</style>
+
+
+	<div class="row">
+		<div class="form-group col-sm-12">
+			<h2 class="page-heading"
+			style="text-align: left;
+				border-bottom: 5px solid #e9f3f4">CRISPR分析帮助文档</h2>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					<h3 class="panel-title">
+						<a class="accordion-toggle" data-toggle="collapse" href="#crispr">What is a CRISPR-Cas system</a>
+					</h3>
+				</div>
+				<div id="crispr" class="panel-collapse collapse in">
+					<div class="panel-body">
+						<p style="margin-top: 15px">
+							CRISPR are repeat arrays found in the DNA of many bacteria and archaea. The name is an acronym for Clustered Regularly Interspaced Short Palindromic Repeats.
+						</p>
+						<p>
+							The repeats or DR, ranging in size from 23 to 47 base pairs, are separated by spacers of similar length. Repeats often show some dyad symmetry but are not truly palindromic. Spacers are usually unique in a genome. They match sequences in genomes of phage, plasmid or mobile genetic elements. Inside a species, the CRISPR repeat array may show polymorphism.
+						</p>
+						<p>
+							Cas genes stand for CRISPR-associated genes. Together with the CRISPR array they constitute the CRISPR-Cas defense mechanism. Cas function as clusters of 3 to more than 10 genes and can be distributed into 6 types (I to VI) and more than 30 subtypes.
+						</p>
+						<img src="@routes.Assets.at("images/CrisperCasSchema.png")" style="width: 100%">
+
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					<h4 class="panel-title">
+						<a class="accordion-toggle" data-toggle="collapse" href="#details" aria-expanded="true">More details</a>
+					</h4>
+				</div>
+				<div id="details" class="panel-collapse collapsed collapse in" aria-expanded="true" style="">
+					<div class="panel-body">
+						<h2>CRISPR –Cas systems</h2>
+						<p>
+							<span style="color:maroon; font-weight:bold">Clustered Regularly Interspaced Short Palindromic Repeats</span>
+							(<span style="font-weight:bold">CRISPRs</span>) are specific structures found in many prokaryotic genomes
+							that show characteristics of both tandem and interspaced repeats.
+							They have been described in a wide range of prokaryotes, including the majority of Archae and many Eubacteria.
+							A CRISPR locus is characterized by:
+						</p><ul>
+						<li>
+							<span class="emphasis">Repeats and Spacers</span> :
+							A CRISPR is a succession of 23-47bp sequences called repeats separated by unique sequences of a similar length (spacers).
+							Sometimes, at one end of the CRISPR, the repeat is not totally conserved, it is called degenerate repeat.
+						</li>
+						<li>
+							<span class="emphasis">A leader sequence</span> :
+							the CRISPR locus is generally flanked on one side by an AT-rich leader sequence of 100-350 bp,
+							acting as a promoter for the pre-crRNA synthesis.
+						</li>
+					</ul>
+						Together with a set of genes called <span class="italic">cas</span> for “CRISPR-associated”, they constitute an immune system.
+						<ul>
+							<li>
+								<span class="emphasis">Cluster of <span class="italic">cas</span> genes</span> :
+								CRISPR-associated genes are genes found closely linked to the repetitive sequences.
+							</li>
+						</ul>
+						<p></p>
+						<h2>Repeats and Spacers</h2>
+						<p>
+							In a given strain several CRISPRs can be found with a single or different repeat sequences but only one of each kind is associated
+							with the <span class="italic">cas</span> genes. The spacers in the different CRISPRs are different.<br>
+							The unique sequences or spacers correspond mostly to fragments of foreign DNA, ie. viruses, plasmids or mobile genetic elements.
+						</p>
+						<h2>Cas Genes</h2>
+						<p>
+							Several genes called <span class="italic">cas</span> for CRISPR-associated are found in the vicinity of CRISPRs and
+							perform the three different functions of the immune system: adaptation, crRNA maturation and interference.
+							Their number varies from one type to another.
+							Phylogenetic studies performed on the CAS protein suggest that CRISPRs are acquired by horizontal transfer.
+							This is further shown by their presence on megaplasmids.
+						</p>
+						<h2>Leader sequence</h2>
+						<p>
+							CRISPR loci are transcribed into a pre-crRNA from the leader acting as a promoter.
+							This precursor is then matured into small crRNA that play a role in the targeting and destruction of homologous foreign sequences.
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					<h3 class="panel-title">
+						<a class="accordion-toggle" data-toggle="collapse" href="#fasta">FASTA Format</a>
+					</h3>
+				</div>
+				<div id="fasta" class="panel-collapse collapse in">
+					<div class="panel-body">
+						<h2>Definition</h2>
+						<p>
+							The first line starts with a greater than sign "&gt;" and contains a name or other identifier for the sequence.
+							This is the sequence header and must be in a single line.
+							The remaining lines contain the sequence data.
+							The sequence can be in upper or lower case letters.
+							Anything other than letters (numbers for example) is ignored.
+							Multiple sequences can be present in the same file as long as each sequence has its own header.
+						</p>
+						<h2>Supported Nucleic acid code</h2>
+						<p>
+						</p><div class="col-xs-12">
+						<div class="col-xs-5">
+							<table>
+								<tbody><tr>
+									<td>A</td>
+									<td>→</td>
+									<td style="width: 50%">adenosine</td>
+								</tr>
+									<tr>
+										<td>C</td>
+										<td>→</td>
+										<td style="width: 50%">cytidine</td>
+									</tr>
+									<tr>
+										<td>G</td>
+										<td>→</td>
+										<td style="width: 50%">guanine</td>
+									</tr>
+									<tr>
+										<td>T</td>
+										<td>→</td>
+										<td style="width: 50%">thymidine</td>
+									</tr>
+									<tr>
+										<td>U</td>
+										<td>→</td>
+										<td style="width: 50%">uridine</td>
+									</tr>
+									<tr>
+										<td>R</td>
+										<td>→</td>
+										<td style="width: 50%">G A (purine)</td>
+									</tr>
+									<tr>
+										<td>Y</td>
+										<td>→</td>
+										<td style="width: 50%">T C (pyrimidine)</td>
+									</tr>
+									<tr>
+										<td>K</td>
+										<td>→</td>
+										<td style="width: 50%">G T (keto)</td>
+									</tr>
+								</tbody></table>
+						</div>
+						<div class="col-xs-5">
+							<table>
+								<tbody><tr>
+									<td>M</td>
+									<td>→</td>
+									<td style="width: 50%">A C (amino)</td>
+								</tr>
+									<tr>
+										<td>S</td>
+										<td>→</td>
+										<td style="width: 50%">G C (strong)</td>
+									</tr>
+									<tr>
+										<td>W</td>
+										<td>→</td>
+										<td style="width: 50%">A T (weak)</td>
+									</tr>
+									<tr>
+										<td>B</td>
+										<td>→</td>
+										<td style="width: 50%">G T C</td>
+									</tr>
+									<tr>
+										<td>D</td>
+										<td>→</td>
+										<td style="width: 50%">G A T</td>
+									</tr>
+									<tr>
+										<td>H</td>
+										<td>→</td>
+										<td style="width: 50%">A C T</td>
+									</tr>
+									<tr>
+										<td>V</td>
+										<td>→</td>
+										<td style="width: 50%">G C A</td>
+									</tr>
+									<tr>
+										<td>N</td>
+										<td>→</td>
+										<td style="width: 50%">A G C T (any)</td>
+									</tr>
+									<tr>
+										<td>-</td>
+										<td>→</td>
+										<td style="width: 50%;
+											white-space: nowrap">gap of indeterminate length</td>
+									</tr>
+								</tbody></table>
+						</div>
+					</div>
+						<p></p>
+						<p>
+							Ns are accepted, IUB/GCG letters (MRWSYKVHDBX) will be converted to Ns.
+							Any other characters will be deleted.
+						</p>
+						<h2>Example</h2>
+						<p>
+							The FASTA format is a plain text format which looks something like this:
+						</p><pre>&gt;Escherichia coli UTI89|886538|887045
+						GTTCACTGCCGTACAGGCAGCTTAGAAA TGACGCCATATGCAGATCATTGAGGCGAAACC
+						GTTCACTGCCGTACAGGCAGCTTAGAAA ACGTTCGCACCGGTCAGGGTACTGCGCAGCGT
+						GTTCACTGCCGTACAGGCAGCTTAGAAA GAAACCAGAGCGCCCGCATAAAACAGGCACAA
+						GTTCACTGCCGTACAGGCAGCTTAGAAA GCCAGCATAAAACCGCCTTTGATATTTTATTG
+						GTTCACTGCCGTACAGGCAGCTTAGAAA TCAGCCGGAGGCTCTCAATTTCAGCCGCGCGG
+						GTTCACTGCCGTACAGGCAGCTTAGAAA AGCACGGCTGCGGGGAATGGCTCAATCTCTGC
+						GTTCACTGCCGTACAGGCAGCTTAGAAA TGATGGCGCAGCAGTCCTCCCTCCTGCCGCCA
+						GTTCACTGCCGTACAGGCAGCTTAGAAA CTGAACGTTGAAGAGTGCGACCGTCTCTCCTT
+						GTTCACTGCCGTACAGGCAGTATTCACA
+					</pre>
+						<p></p>
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					<h3 class="panel-title">
+						<a class="accordion-toggle" data-toggle="collapse" href="#crispr">CRISPR Advanced Settings</a>
+					</h3>
+				</div>
+				<div id="crispr" class="panel-collapse collapse in">
+					<div class="panel-body">
+						<p>
+							The default parameters have been set to detect repeats with high homology level.<br>
+							It is possible to modify some parameters defining the maximal repeat and the CRISPR properties.
+						</p>
+						<p>
+							- Minimal Repeat length (default value = 23 ; allowed numerical values between 1 and 70),<br>
+							- Maximal Repeat length (default value = 55 ; allowed numerical values between 2 and 80),<br>
+							- Allow mismatch between repeats (default value = 1; allowed numerical values are 1 or 0),<br>
+							- Minimal Spacers size in function of Repeat size (default value = 0.6 ; allowed numerical values between 0.1 and 60),<br>
+							- Maximal Spacers size in function of Repeat size (default value = 2.5 ; allowed numerical values between 1.5 and 60),<br>
+							- Maximal allowed percentage of similarity between Spacers (default value= 60 ; allowed numerical values between 1 and 100),<br>
+							- Percentage mismatches allowed between Repeats (default value= 20 ; allowed numerical values between 1 and 100),<br>
+							- Percentage mismatches allowed for truncated Repeat (default value= 33.3 ; allowed numerical values between 1 and 100),<br>
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					<h3 class="panel-title">
+						<a class="accordion-toggle" data-toggle="collapse" href="#cas">CRISPR Other Settings</a>
+					</h3>
+				</div>
+				<div id="crispr_other" class="panel-collapse collapse in">
+					<div class="panel-body">
+						<p>
+							- The size of Flanking regions in base pairs (bp) for each analyzed CRISPR array can be modified (default value= 100 ; allowed numerical values between 10 and 1000).<br>
+							- Alternative way to detect the truncated repeat. Mismatches are search in the first half of the repeat flanking the array.<br>
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					<h3 class="panel-title">
+						<a class="accordion-toggle" data-toggle="collapse" href="#cas">CAS Settings</a>
+					</h3>
+				</div>
+				<div id="cas" class="panel-collapse collapse in">
+					<div class="panel-body">
+						<p>
+							The "Perform CAS detection" button allows users to choose between three stringency levels to identify cas genes.
+							The first level (General) allows a permissive search (i.e. CAS will be detected whatever the system type or subtype).
+							The two other levels (Typing and SubTyping) produce more stringent analyses.
+							See MacSyFinder documentation (http://macsyfinder.readthedocs.io/en/latest/) for further information.
+						</p>
+						<p>
+							The "Unordered" button allows users to perform a search for non-clustered cas genes in unordered or smaller sequences (such as contigs).
+							This functionality uses "-p meta" option of Prodigal and "--db-type unordered" option of MacSyFinder.
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					<h3 class="panel-title">
+						<a class="accordion-toggle" data-toggle="collapse" href="#resultView">Viewing Result</a>
+					</h3>
+				</div>
+				<div id="viewingResult" class="panel-collapse collapse in">
+					<div class="panel-body">
+						<p>
+							The summary displays information on CRISPR arrays and cas gene clusters
+							in the order in which they lie along the chromosome.
+							Direction is the proposed orientation of the CRISPR array (ND is for Not determined)
+							according to the CRISPRDirection program. In Details  is shown, in addition,
+							the potential orientation of the CRISPR array based on the AT percentage in 100bp flanking sequences.
+						</p>
+						<p>
+							"Conservation DR" corresponds to the EBcons (Entropy-Based conservation) of repeats as described in the related manuscript
+							(<a href="https://academic.oup.com/nar/advance-article-abstract/doi/10.1093/nar/gky425/5001162" target="_blank">Couvin et al., NAR 2018</a>).<br>
+							"Conservation Spacer" indicates the conservation of spacers based on BioPerl's overall percentage identity (see the publication for more details).
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+			$(function () {
+				$(".table").bootstrapTable({})
+
+
+			})
+
+	</script>
+
+}

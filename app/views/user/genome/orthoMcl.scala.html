@@ -1,0 +1,415 @@
+@()(implicit request: RequestHeader)
+@main("OrthoMcl(同源基因分析)") {
+
+	<style>
+			.myH4 {
+				font-size: 17px;
+			}
+
+	</style>
+
+	<div class="row">
+		<div class="form-group col-sm-12">
+			<h2 class="page-heading"
+			style="text-align: left;
+				border-bottom: 5px solid #e9f3f4">OrthoMcl(同源基因分析)</h2>
+		</div>
+	</div>
+
+	<form class="registration-form form-horizontal" id="form"
+	accept-charset="UTF-8" method="post">
+
+		<div class="form-group">
+			<label class="control-label col-sm-2">任务名:</label>
+			<div class="col-sm-3">
+				<input class="form-control" name="missionName" onfocus="inputSelect(this)">
+			</div>
+
+		</div>
+
+		<div class="form-group">
+			<label class="control-label col-sm-2">样品(多选):</label>
+			<div class="col-sm-10">
+				<select class="form-control db" name="sampleNames[]" multiple>
+				</select>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="control-label col-sm-2">Pv Cutoff<span id="question5" style="margin-bottom: 5px">
+				<a type="button" title="说明" data-container="body" data-toggle="popover"
+				data-placement="right" data-content="P-Value or E-Value Cutoff in BLAST search and/or
+                         ortholog clustering."
+				data-trigger="hover"><i class="fa fa-question-circle-o"></i></a>
+			</span>:</label>
+			<div class="col-sm-2">
+				<input class="form-control" name="pvCutoff" id="evalue" value="1e-5">
+			</div>
+
+			<label class="control-label col-sm-2">Pi Cutoff<span id="question5" style="margin-bottom: 5px">
+				<a type="button" title="说明" data-container="body" data-toggle="popover"
+				data-placement="right" data-content="Percent Identity Cutoff <0-100> in ortholog
+                         clustering."
+				data-trigger="hover"><i class="fa fa-question-circle-o"></i></a>
+			</span>:</label>
+			<div class="col-sm-2">
+				<input class="form-control" name="piCutoff" id="mCharacteristic" value="30">
+			</div>
+
+		</div>
+
+		<div class="form-group">
+			<label class="control-label col-sm-2">Pmatch Cutoff<span id="question5" style="margin-bottom: 5px">
+				<a type="button" title="说明" data-container="body" data-toggle="popover"
+				data-placement="right" data-content="Percent Match Cutoff <0-100> in ortholog
+                         clustering."
+				data-trigger="hover"><i class="fa fa-question-circle-o"></i></a>
+			</span>:</label>
+			<div class="col-sm-2">
+				<input class="form-control" name="pmatchCutoff" id="evalue" value="0">
+			</div>
+
+		</div>
+
+		<div class="form-group">
+			<div class="actions col-sm-offset-2 col-sm-2">
+				<button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="mySearch()">
+					运行</button>
+			</div>
+
+		</div>
+
+	</form>
+
+	<hr>
+	<h4>分析结果:</h4>
+
+	<div class="table-responsive">
+
+		<table class="display table table-bordered" id="missionTable" data-pagination="true" data-search="true"
+		data-toolbar="#toolbar" data-page-list="[5, 10, all]" data-page-size="5" data-multiple-search="true">
+			<thead>
+				<tr>
+					<th data-field="missionname" data-sortable="true">任务名</th>
+					<th data-field="args" data-sortable="true" data-formatter="genome.argsFmt">参数</th>
+					<th data-field="state" data-sortable="true"
+					data-formatter="genome.stateFmt"
+					>状态</th>
+					<th data-field="starttime" data-sortable="true">开始时间</th>
+					<th data-field="endtime" data-sortable="true">结束时间</th>
+					<th data-field="operate" data-formatter="genome.operateFmt">操作</th>
+				</tr>
+			</thead>
+		</table>
+
+	</div>
+
+
+	<div id="result" style="display: none">
+		<hr>
+		<h4 style="color: black" id="missionResult">同源基因分析结果展示(<span id="missionName"></span>):</h4>
+
+		<div id="resultContent">
+			<h4 style="margin-top: 20px" class="myH4">
+				1. Gene family strain<span id="question1" style="margin-bottom: 5px">
+				<a type="button" title="说明" data-container="body" data-toggle="popover"
+				data-placement="right" data-content="两两样本间同源基因数目统计矩阵。All.strains对应的数值为所有样本共有的同源基因数目。"
+				data-trigger="hover"><i class="fa fa-question-circle-o"></i></a>
+			</span>:</h4>
+
+			<label>显示的列:</label>
+			<div id="checkbox" class="checkbox">
+
+			</div>
+
+			<div class="table-responsive" id="tableContent">
+				<table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
+				data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100, all]" data-multiple-search="true"
+				data-show-export="true" data-export-types="['excel','txt']" data-export-data-type="all"
+				>
+					<thead>
+						<th data-field='geneId' data-sortable='true' id="marker">homology</th>
+					</thead>
+				</table>
+
+			</div>
+
+		</div>
+
+		<h4 style="margin-top: 20px" class="myH4">2. Gene family info<span id="question1" style="margin-bottom: 5px">
+			<a type="button" title="说明" data-container="body" data-toggle="popover"
+			data-placement="right" data-content="每个样本同源和特异基因数目统计表。第一列为样本编号；
+				第二列为同源基因数目；第三列为特异基因数目；第四列为基因总数。"
+			data-trigger="hover"><i class="fa fa-question-circle-o"></i></a>
+		</span>:</h4>
+		<table class="display table table-bordered" id="infoTable" data-pagination="true" data-search="true"
+		data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100, all]" data-multiple-search="true"
+		data-show-export="true" data-export-types="['excel','txt']" data-export-data-type="all"
+		style="overflow: scroll" >
+			<thead>
+				<th data-field='Sam' data-sortable='true' id="marker">Sam</th>
+				<th data-field='homology.gene.family' data-sortable='true' id="marker">homology.gene.family</th>
+				<th data-field='special_gene' data-sortable='true' id="marker">special_gene</th>
+				<th data-field='all' data-sortable='true' id="marker">all</th>
+			</thead>
+		</table>
+		<h4 style="margin-top: 20px" class="myH4">3. All orthomcl out<span id="question1" style="margin-bottom: 5px">
+			<a type="button" title="说明" data-container="body" data-toggle="popover"
+			data-placement="right" data-content="OrthoMcl(同源基因分析)结果详细信息。
+				第一列为聚类结果编号；第二列为基因数目统计；第三列为样本数统计；第四列为详情。"
+			data-trigger="hover"><i class="fa fa-question-circle-o"></i></a>
+		</span>:</h4>
+		<table class="display table table-bordered" id="allTable" data-pagination="true" data-search="true"
+		data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100, all]" data-multiple-search="true"
+		data-show-export="true" data-export-types="['excel','txt']" data-export-data-type="all"
+		style="overflow: scroll">
+			<thead>
+				<th data-field='orthomcl' data-sortable='true' id="marker">Orthomcl</th>
+				<th data-field='genes' data-sortable='true'>Genes</th>
+				<th data-field='taxa' data-sortable='true'>Taxa</th>
+				<th data-field='detail' data-sortable='true' id="marker">Detail</th>
+			</thead>
+		</table>
+
+
+	</div>
+
+	<script>
+			var kind = "orthoMcl"
+
+			function showResult(id, missionName) {
+				$("#missionName").text(missionName)
+				showId = id
+				var index = layer.load(1, {
+					shade: [0.1, '#fff']
+				});
+				$.ajax({
+					url: "@routes.GenomeController.orthoMclResult()?missionId=" + id,
+					type: "get",
+					dataType: "json",
+					success: function (data) {
+						layer.close(index)
+						$("#allTable").bootstrapTable("load", data.allData)
+						$("#infoTable").bootstrapTable("load", data.infoData)
+						refreshContent(data)
+						$("#result").show()
+						var target_top = $("#missionResult").offset().top
+						$("html,body").animate({scrollTop: target_top}, 800)
+					}
+				})
+			}
+
+			var originalHtml = ""
+			$(function () {
+				$('#missionTable').bootstrapTable({});
+				genome.getAllMission("orthoMcl")
+				var wsUri = "@routes.GenomeController.updateMissionSocket("orthoMcl").webSocketURL()"
+				genome.testWebSocket(wsUri);
+
+				$("#allTable").bootstrapTable({
+					exportOptions: {
+						csvSeparator: "\t",
+						fileName: 'all_orthomcl.out'
+					},
+					exportHiddenColumns: true
+
+				})
+				$("#infoTable").bootstrapTable({
+					exportOptions: {
+						csvSeparator: "\t",
+						fileName: 'gene.family.info'
+					},
+					exportHiddenColumns: true
+				})
+
+				$.ajax({
+					url: "@routes.BrowseController.getAllSample()",
+					success: function (data) {
+						var dbNames = $.map(data, function (v) {
+							return {
+								text: v.organism + "(" + v.samplename + ")",
+								id: v.organism + "(" + v.samplename + ")"
+							}
+						})
+						$(".db").select2(
+								{
+									data: dbNames,
+									allowClear: true,
+									placeholder: "点击选择",
+								}
+						);
+
+					}
+				});
+
+				originalHtml = $("#tableContent").html()
+				bootstrapValidator()
+				refreshMissionName()
+
+			})
+
+			function setColumns(value) {
+				var element = $("input:checkbox[value='" + value + "']")
+				if (element.is(":checked")) {
+					$('#table').bootstrapTable('showColumn', value);
+				} else {
+					$('#table').bootstrapTable('hideColumn', value);
+				}
+			}
+
+			function mySearch() {
+				var form = $("#form")
+				var fv = form.data("bootstrapValidator")
+				fv.validate()
+				if (fv.isValid()) {
+					var element = "<div id='content'><span id='info'>" + zhRunning + "</span>&nbsp;<img class='runningImage' src='@routes.Assets.at("images/running2.gif")' style='width: 30px;height: 20px;'></div>"
+					var index = layer.alert(element, {
+						skin: 'layui-layer-molv'
+						, closeBtn: 0,
+						title: zhInfo,
+						btn: []
+					});
+					$.ajax({
+						url: "@routes.GenomeController.orthoMcl()",
+						type: "post",
+						data: form.serialize(),
+						success: function (data) {
+							layer.close(index)
+							refreshMissionName()
+							if (data.valid == "false") {
+								swal("错误", data.message, "error")
+								$("#result").hide()
+							} else {
+								$("#missionTable").bootstrapTable("load", data)
+							}
+
+						}
+					});
+				}
+			}
+
+			function refreshContent(data) {
+				var checkboxHtml = ""
+
+				$.each(data.columnNames, function (i, v) {
+					checkboxHtml += "<label style='margin-right: 15px'>" +
+							"<input type='checkbox' checked='checked' value='" + v + "' onclick=\"setColumns('" + v + "')\">" + v +
+							"</label>"
+				})
+
+				$("#checkbox").empty().append(checkboxHtml)
+				var html = ""
+				$.each(data.columnNames, function (i, v) {
+					html += "<th data-field='" + v + "' data-sortable='true'>" + v + "</th>"
+				})
+				$("#tableContent").empty().append(originalHtml)
+				$("#marker").after(html)
+				$('#table').bootstrapTable({
+					data: data.array,
+					exportOptions: {
+						csvSeparator: "\t",
+						fileName: 'genefamily.strain.mat'
+					},
+					exportHiddenColumns: true
+				});
+				$.each(data.columnNames.slice(7), function (n, value) {
+							$('#table').bootstrapTable('hideColumn', value);
+							$("input:checkbox[value='" + value + "']").attr("checked", false)
+						}
+				);
+			}
+
+			function bootstrapValidator() {
+				var infinityNumber = Number.MAX_VALUE
+				$('#form').bootstrapValidator({
+					framework: 'bootstrap',
+					icon: {
+						valid: 'glyphicon glyphicon-ok',
+						invalid: 'glyphicon glyphicon-remove',
+						validating: 'glyphicon glyphicon-refresh'
+					},
+					fields: {
+						'sampleNames[]': {
+							validators: {
+								callback: {
+									message: '至少选择两个样品！',
+									callback: function (value, validator, $field) {
+										var options = validator.getFieldElements('sampleNames[]').val();
+										return (options != null && options.length >= 2);
+									}
+								}
+							}
+						},
+						pvCutoff: {
+							validators: {
+								notEmpty: {
+									message: 'PV Cutoff不能为空！'
+								},
+								between: {
+									min: 0,
+									max: infinityNumber,
+									message: "PV Cutoff必须大于等于0！"
+								},
+								numeric: {
+									message: "PV Cutoff必须是数字！"
+								},
+							}
+						},
+						piCutoff: {
+							validators: {
+								notEmpty: {
+									message: 'Pi Cutoff不能为空！'
+								},
+								between: {
+									min: 0,
+									max: infinityNumber,
+									message: "Pi Cutoff必须大于等于0！"
+								},
+								integer: {
+									message: "Pi Cutoff必须是整数！"
+								},
+							}
+						},
+						pmatchCutoff: {
+							validators: {
+								notEmpty: {
+									message: 'Pmatch Cutoff不能为空！'
+								},
+								between: {
+									min: 0,
+									max: infinityNumber,
+									message: "Pmatch Cutoff必须大于等于0！"
+								},
+								integer: {
+									message: "Pmatch Cutoff必须是整数！"
+								},
+							}
+						},
+						missionName: {
+							validators: {
+								notEmpty: {
+									message: '任务名不能为空！'
+								},
+								remote: {
+									message: "任务名已存在！",
+									url: "@routes.GenomeController.missionNameCheck()",
+									data: function (validator, $field, value) {
+										return {
+											missionName: $("input[name='missionName']").val(),
+											kind:kind
+										};
+									},
+									type: "POST",
+									delay: 1000
+								},
+							}
+						},
+
+					}
+				});
+			}
+
+	</script>
+
+
+}

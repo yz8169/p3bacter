@@ -1,0 +1,102 @@
+@()
+@admin.main("管理员首页") {
+	<style>
+			#content h4 {
+				font-weight: bold;
+				color: #777;
+			}
+		#myTable a{
+			text-decoration: underline;
+		}
+			#myTable tr{
+				line-height: 2em;
+			}
+
+			#myTable h4{
+				line-height: 2em;
+				/*color: #428bca;*/
+				color: #344A76;
+			}
+			#myTable td{
+				text-indent: 3em;
+			}
+
+	</style>
+	<div class="container" id="content">
+
+		<ul class="page-breadcrumb breadcrumb">
+			<li class="active">
+				<h4 style="margin: 0px;"><strong>欢迎登录后台管理系统</strong></h4>
+			</li>
+		</ul>
+
+
+		<div class="row">
+			<div class="col-sm-12">
+				<h4>
+					管理：
+				</h4>
+				<table id="myTable">
+					<tr>
+						<td><a href="@routes.AdminController.addSampleDataBefore()">
+							<h4 style="margin: 0px;"><strong>1. 新增细菌基因组数据</strong></h4>
+						</a></td>
+					</tr>
+					<tr>
+						<td><a href="@routes.AdminController.sampleManageBefore()">
+							<h4 style="margin: 0px;"><strong>2. 基因组管理(浏览、删除)</strong></h4>
+							</a></td>
+					</tr>
+					<tr>
+						<td><a href="@routes.AdminController.proteinManageBefore()">
+							<h4 style="margin: 0px;"><strong>3. 蛋白组数据管理</strong></h4>
+							</a></td>
+
+					</tr>
+
+				</table>
+
+			</div>
+
+
+		</div>
+
+		<div id="myFooter" class="row" style="bottom: 0px;
+			position: absolute;margin-left: 0px;
+			width: 1140px;display: none">
+			<div class="page-prefooter">
+				<div class="row">
+					<div class="col-sm-12">
+						<div class=" col-sm-6 footer-block">
+							<h2>关于我们</h2>
+							<p style="letter-spacing: 1px">
+								广东省水稻研究所，以水稻育种研究为中心的稻作科技创新，为广东乃至南方稻区的水稻生产提供强大的科技支撑，为维护粮食可持续安全不断作出新贡献。                    </p>
+						</div>
+						<div class="col-sm-offset-2 col-sm-3  footer-block">
+							<h2>联系方式</h2>
+							<address class="margin-bottom-40">
+								<span style="letter-spacing: 1px">电话</span>: 85514257<br>
+								<span style="letter-spacing: 1px">邮箱</span>: <a href="mailto:shuidao@@gdaas.cn">
+								shuidao@@gdaas.cn</a><br>
+								<span style="letter-spacing: 1px">地址</span>: 广州市金颖东一街3号
+							</address>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+			<div class="row">
+				<div class="col-sm-12">
+					<div class="page-footer">
+						<div style="text-align: center;">
+							©  2003-2010 版权所有 广东省农业科学院水稻研究所
+							粤ICP备12058351号-2</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+}

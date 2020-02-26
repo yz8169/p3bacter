@@ -1,0 +1,332 @@
+@()(implicit request: RequestHeader)
+	@main("ARDB注释(抗性/耐药)") {
+
+		<div class="row">
+			<div class="form-group col-sm-12">
+				<h2 class="page-heading"
+				style="text-align: left;
+					border-bottom: 5px solid #e9f3f4">ARDB注释(抗性/耐药)
+					<a target="_blank" href="https://ardb.cbcb.umd.edu/"><span class="fa fa-question-circle"></span></a>
+
+				</h2>
+			</div>
+		</div>
+
+		<form class="registration-form form-horizontal" id="form"
+		accept-charset="UTF-8" method="post">
+
+			<div class="form-group">
+				<label class="control-label col-sm-2">任务名:</label>
+				<div class="col-sm-3">
+					<input class="form-control" name="missionName" onfocus="inputSelect(this)">
+				</div>
+
+			</div>
+
+			<div class="form-group">
+				<label class="control-label col-sm-2">Type of query:</label>
+				<div class="col-sm-3">
+					<select class="form-control" onchange="change(this)" name="method">
+						<option selected value="text">Text</option>
+						<option value="file">File</option>
+					</select>
+				</div>
+			</div>
+
+			<div class="form-group" id="queryContent">
+				<label class="control-label col-sm-2">Query text:<br>(蛋白序列)</label>
+				<div class="col-sm-8">
+					<textarea class="form-control monospace" name="queryText" id="queryText" rows="7"></textarea>
+					<span class="help-block">e.g.,&nbsp;<a href="#"><em id="egQuery">
+						示例</em></a></span>
+				</div>
+			</div>
+
+			<div id="queryFile" style="display: none;">
+				<div class="form-group">
+					<label class="control-label col-sm-2">Query fasta file:</label>
+					<div class="col-sm-8">
+						<input id="input-1" type="file" class="file control-label" name="file" data-show-preview="false"
+						data-show-upload="false" accept="fa,fasta">
+					</div>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label class="control-label col-sm-2">Evalue:</label>
+				<div class="col-sm-2">
+					<input class="form-control" name="evalue" id="evalue" value="1e-5">
+				</div>
+
+			</div>
+
+			<div class="form-group">
+				<div class="actions col-sm-offset-2 col-sm-2">
+					<button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="mySearch()">
+						运行</button>
+				</div>
+
+				<div class="actions  col-sm-2">
+					<button type="reset" class="btn btn-primary" style="width: 90%;">
+						重置</button>
+				</div>
+			</div>
+
+		</form>
+
+		<hr>
+		<h4>分析结果:</h4>
+
+		<div class="table-responsive">
+
+			<table class="display table table-bordered" id="missionTable" data-pagination="true" data-search="true"
+			data-toolbar="#toolbar" data-page-list="[5, 10, all]" data-page-size="5" data-multiple-search="true">
+				<thead>
+					<tr>
+						<th data-field="missionname" data-sortable="true">任务名</th>
+						<th data-field="args" data-sortable="true" data-formatter="genome.argsFmt">参数</th>
+						<th data-field="state" data-sortable="true"
+						data-formatter="genome.stateFmt"
+						>状态</th>
+						<th data-field="starttime" data-sortable="true">开始时间</th>
+						<th data-field="endtime" data-sortable="true">结束时间</th>
+						<th data-field="operate" data-formatter="genome.operateFmt">操作</th>
+					</tr>
+				</thead>
+			</table>
+
+		</div>
+
+		<div id="result" style="display: none">
+			<hr>
+			<h4 style="color: black" id="missionResult">ARDB注释结果展示(<span id="missionName"></span>):</h4>
+			<div id="resultContent">
+
+				<label>显示的列:</label>
+				<div id="checkbox" class="checkbox">
+
+				</div>
+
+				<div class="table-responsive" id="tableContent">
+					<table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
+					data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100, all]" data-multiple-search="true"
+					data-show-export="true" data-export-types="['excel','txt']" data-export-data-type="all"
+					>
+						<thead>
+							<th data-field='geneId' data-sortable='true' id="marker">Query</th>
+						</thead>
+					</table>
+
+				</div>
+
+			</div>
+		</div>
+
+		<script>
+				var originalHtml = ""
+				var kind = "ardb"
+				$(function () {
+					$('#missionTable').bootstrapTable({});
+					genome.getAllMission(kind)
+					var wsUri = "@routes.GenomeController.updateMissionSocket("ardb").webSocketURL()"
+					genome.testWebSocket(wsUri);
+					originalHtml = $("#tableContent").html()
+					bootstrapValidator()
+					refreshMissionName()
+				})
+
+				function showResult(id, missionName) {
+					showId = id
+					var index = layer.load(1, {
+						shade: [0.1, '#fff']
+					});
+					$.ajax({
+						url: "@routes.GenomeController.ardbResult()?missionId=" + id,
+						type: "get",
+						dataType: "json",
+						success: function (data) {
+							layer.close(index)
+							refreshContent(data)
+							$("#result").show()
+							var target_top = $("#missionResult").offset().top
+							$("html,body").animate({scrollTop: target_top}, 800)
+						}
+					})
+				}
+
+				function setColumns(value) {
+					var element = $("input:checkbox[value='" + value + "']")
+					if (element.is(":checked")) {
+						$('#table').bootstrapTable('showColumn', value);
+					} else {
+						$('#table').bootstrapTable('hideColumn', value);
+					}
+				}
+
+				function change(element) {
+					var value = $(element).find(">option:selected").val()
+					if (value == "text") {
+						$("#queryContent").show()
+						$("#queryFile").hide()
+					} else {
+						$("#queryContent").hide()
+						$("#queryFile").show()
+					}
+				}
+
+				$('#egQuery').click(function () {
+					var eg = ">SF0406 ybaJ AE005674 416864 417239 - conserved hypothetical protein\n" +
+							"MDEYSPKRHDIAQLKFLCETLYHDCLANLEESNHGWVNDPTSAINLQLNELIEHIATFALNYKIKYNEDNKLIEQIDEYLDDTFMLFSSYGINMQALQKWRKSGNRLFRCFVNATKENPASLSC\n" +
+							">SF0407 acrB AE005674 417784 420934 - acriflavine resistance protein\n" +
+							"MPNFFIDRPIFAWVIAIIIMLAGGLAILKLPVAQYPTIAPPAVTISRFYPGADAKTVQDTVTQVIEQNMTGIDNLMYMSSNSDSTGTVQITLTFESGTDADIAQVQVQNKLQLAMPLLPQEVQQQGVSVEKSSSSFLMVVGVINTDGTMTQEDISDYVAANMKDAISRTSGVGDVQLFGSQYAMRIWMNPNELNKFQLTPVDVITAIKAQNAQVAAGQLGGTPPVKGQQLNASIIAQTRLTSTEEFGKILLKVNQDGSRVLLRDVAKIELGGENYDIIAEFNGQPASGLGIKLATGANALDTAAAIRAELAKMEPFFPSGLKIVYPYDTTPFVKISIHEVVKTLVEAIILVFLVMYLFLQNFRATLIPTIAVPVVLLGTFAVLAAFGFSINTLTMFGMVLAIGLLVDDAIVVVENVERVMAEEGLPPKEATRKSMGQIQGALVGIAMVLSAVFVPMAFFGGSTGAIYRQFSITIVSAMALSVLVALILTPALCATMLKPIAKGDHGEGKKGFFGWLNRMFEKSTHHYTDSVGGILRSTGRYLVLYLIIVVGMAYLFVRLPSSFLPDEDQGVFMTMVQLPAGATQERTQKVLNEVTHYYLTKEKNNVESVFAVNGFGFAGRGQNTGIAFVSLKDWADRPGEENKVEAITMRATRAFSQIKDAMVFAFNLPAIVELGTATGFDFELIDQAGLGHEKLTQARNQLLAEAAKHPDMLTSVRPNGLEDTPQFKIDIDQEKAQALGVSINDINTTLGAAWGGSYVNDFIDRGRVKKVYVMSEAKYRMLPDDIGDWYVRAADGQMVPFSAFSSSRWEYGSPRLERYNGLPSMEILGQAAPGKSTGEAMELMEQLASKLPTGVGYDWTGMSYQERLSGNQAPSLYAISLIVVFLCLAALYESWSTPFSVMLVVPLGVIGALLAATFRGLTNDVYFQVGLLTTIGLSAKNAILIVEFAKDLMDKEGKGLIEATLDAVRMRLRPILMTSLAFILGVMPLVISTGAGSGAQNAVGTGVMGGMVTATVLAIFFVPVFFVVVRRRFSRKNEDIEHSHTVDHH\n" +
+							">SF0408 acrA AE005674 420956 422150 - acriflavin resistance protein AcrA precursor\n" +
+							"MNKNRGFTPLAVVLMLSGSLALTGCDDKQAQQGGQQMPAVGVVTVKTEPLQITTELPGRTSAYRIAEVRPQVSGIILKRNFKEGSDIEAGVSLYQIDPATYQATYDSAKGDLAKAQAAANIAQLTVNRYQKLLGTQYISKQGYDQALADAQQANAAVTAAKAAVETARINLAYTKVTSPISGRIGKSNVTEGALVQNGQATVLATVQQLDPIYVDVTQSSNDFLRLKQELANGTLKQENGKAKVSLITSDGIKFPQDGTLEFSDVTVDQTTGSITLRAIFPNPDHTLLPGMFVRARLEEGLNPNAILVPQQGVTRTPRGDATVLVVGADDKVETRPIVASQAIGDKWLVTEGLKAGDRVVISGLQKVRPGVQVKAQEVTADNNQQAASGAQPEQSKS\n" +
+							">SF0409 acrR AE005674 422291 422939 + acrAB operon repressor\n" +
+							"MARKTKQEAQETRQHILDVALRLFSQQGVSSTSLGEIAKAAGVTRGAIYWHFKDKSDLFSEIWELSESNIGELELEYQAKFPGDPLSVLREILIHVLESTVTEERRRLLMEIIFHKCEFVGEMAVVQQAQRNLCLESYDRIEQTLKHCIEAKMLPADLMTRRAAIIMRGYISGLMENWLFAPQSFDLKKEARDYVAILLEMYLLCPTLRNPATNE\n" +
+							">SF0410 aefA AE005674 423066 426429 + putative alpha helix protein\n" +
+							"MTMFQYYKRSRHFVFSAFIAFVFVLLCQNTAFARASSNGDLPTKADLQAQLDSLNKQKDLSAQDKLVQQDLTDTLATLDKIDRIKEETVQLRQKVAEAPEKMRQATAALTALSDVDNDEETRKILSTLSLRQLETRVAQALDDLQNAQNDLASYNSQLVSLQTQPERVQNAMYNASQQLQQIRSRLDGTDVGETALRPSQKVLMQAQQALLNAEIDQQRKSLEGNTVLQDTLQKQRDYVTANSARLEHQLQLLQEAVNSKRLTLTEKTAQEAVSPDEAARIQANPLVKQELEINQQLSQRLITATENGNQLMQQNIKVKNWLERALQSERNIKEQIAVLKGSLLLSRILYQQQQTLPSADELENMTNRIADLRLEQFEVNQQRDALFQSDAFVNKLEEGHTNEVNSEVHDALLQVVDMRRELLDQLNKQLGNQLMMAINLQINQQQLMSVSKNLKSILTQQIFWVNSNRPMDWDWIKAFPQSLKDEFKSMKITVNWEKAWPAVFIAFLAGLPLLLIAGLIHWRLGWLKAYQQKLASAVGSLRNDSQLNTPKAILIDLIRALPVCLIILAVGLILLTMQLNISELLWSFSKKLAIFWLVFGLCWKVLEKNGVAVRHFGMPEQQTSHWRRQIVRISLALLPIHFWSVVAELSPLHLMDDVLGQAMIFFNLLLIAFLVWPMCRESWRDKESHTMRLVTITVLSIIPIALMVLTATGYFYTTLRLSGRWIETVYLVIIWNLLYQTVLRGLSVAARRIAWRRALARRQNLVKEGAEGAEPPEEPTIALEQVNQQTLRITMLLMFALFGVMFWAIWSDLITVFSYLDSITLWHYNGTEAGAAVVKNVTMGSLLFAIIASMVAWALIRNLPGLLEVLVLSRLNMRQGASYAITTILNYIIIAVGAMTVFGSLGVSWDKLQWLAAALSVGLGFGLQEIFGNFVSGLIILFERPVRIGDTVTIGSFSGTVSKIRIRATTITDFDRKEVIIPNKAFVTERLINWSLTDTTTRLVIRLGVAYGSDLEKVRKVLLKAATEHPRVMHEPMPEVFFTAFGASTLDHELRLYVRELRDRSRTVDELNRTIDQLCRENDINIAFNQLEVHLHNEKGDEVTEVKRDYKGDDPTPAVG\n" +
+							">SF0411 ybaM AE005674 426640 426802 - conserved hypothetical protein\n" +
+							"MSLENAPDDVKLAVDLIVLLEENQIPASTVLRALDIVKRDYEKKLTHDDEAEK"
+
+					$('#queryText').val(eg);
+					$("#form").bootstrapValidator("revalidateField", "queryText")
+				});
+
+				function mySearch() {
+					var form = $("#form")
+					var fv = form.data("bootstrapValidator")
+					fv.validate()
+					if (fv.isValid()) {
+						var form1 = new FormData($("#form")[0]);
+						if (fileExist()) {
+							zhRunning = "正在上传文件"
+						}
+						var element = "<div id='content'><span id='info'>" + zhRunning + "</span><span id='progress'></span>&nbsp;<img class='runningImage' src='@routes.Assets.at("images/running2.gif")' style='width: 30px;height: 20px;'></div>"
+						var index = layer.alert(element, {
+							skin: 'layui-layer-molv'
+							, closeBtn: 0,
+							title: zhInfo,
+							btn: []
+						});
+						$.ajax({
+							xhr: function () {
+								var myXhr = $.ajaxSettings.xhr();
+								if (myXhr.upload) {
+									myXhr.upload.addEventListener('progress', progressHandlingFunction, false);
+								}
+								return myXhr
+							},
+							url: "@routes.GenomeController.ardbAnno()",
+							type: "post",
+							processData: false,
+							contentType: false,
+							data: form1,
+							success: function (data) {
+								layer.close(index)
+								refreshMissionName()
+								if (data.valid == "false") {
+									swal("错误", data.message, "error")
+									$("#result").hide()
+								} else {
+									$("#missionTable").bootstrapTable("load", data)
+								}
+
+							}
+						});
+					}
+				}
+
+				function refreshContent(data) {
+					var checkboxHtml = ""
+
+					$.each(data.columnNames, function (i, v) {
+						checkboxHtml += "<label style='margin-right: 15px'>" +
+								"<input type='checkbox' checked='checked' value='" + v + "' onclick=\"setColumns('" + v + "')\">" + v +
+								"</label>"
+					})
+
+					$("#checkbox").empty().append(checkboxHtml)
+					var html = ""
+					$.each(data.columnNames, function (i, v) {
+						html += "<th data-field='" + v + "' data-sortable='true'>" + v + "</th>"
+					})
+					$("#tableContent").empty().append(originalHtml)
+					$("#marker").after(html)
+					$('#table').bootstrapTable({
+						data: data.array,
+						exportOptions: {
+							csvSeparator: "\t",
+							fileName: 'ardb.anno'
+						},
+						exportHiddenColumns: true
+					});
+					$.each(data.columnNames.slice(7), function (n, value) {
+								$('#table').bootstrapTable('hideColumn', value);
+								$("input:checkbox[value='" + value + "']").attr("checked", false)
+							}
+					);
+				}
+
+				function bootstrapValidator() {
+					var infinityNumber = Number.MAX_VALUE
+					$('#form').bootstrapValidator({
+						framework: 'bootstrap',
+						icon: {
+							valid: 'glyphicon glyphicon-ok',
+							invalid: 'glyphicon glyphicon-remove',
+							validating: 'glyphicon glyphicon-refresh'
+						},
+						fields: {
+							queryText: {
+								validators: {
+									notEmpty: {
+										message: 'Query text不能为空！'
+									}
+								}
+							},
+							file: {
+								validators: {
+									notEmpty: {
+										message: 'Query fasta file不能为空！'
+									},
+									file: {
+										extension: 'fa,fasta',
+										message: 'Query fasta file必须为fasta文件！'
+									}
+								}
+							},
+							missionName: {
+								validators: {
+									notEmpty: {
+										message: '任务名不能为空！'
+									},
+									remote: {
+										message: "任务名已存在！",
+										url: "@routes.GenomeController.missionNameCheck()",
+										data: function (validator, $field, value) {
+											return {
+												missionName: $("input[name='missionName']").val(),
+												kind:kind
+											};
+										},
+										type: "POST",
+										delay: 1000
+									},
+								}
+							},
+						}
+					});
+				}
+
+
+				$("#input-1").fileinput({
+					showPreview: false,
+					browseLabel: "选择...",
+					removeLabel: "删除文件",
+					language: "zh"
+				});
+
+		</script>
+
+
+	}

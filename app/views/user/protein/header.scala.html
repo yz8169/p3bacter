@@ -1,0 +1,77 @@
+@()(implicit request: RequestHeader)
+<style>
+		.navbar-nav > li > a {
+
+			padding-top: 10px;
+			padding-bottom: 10px;
+			line-height: 19.5px;
+
+		}
+
+</style>
+<div class="page-header navbar navbar-fixed-top">
+		<!-- BEGIN HEADER INNER -->
+	<div class="page-header-inner">
+			<!-- BEGIN LOGO -->
+		<div class="page-logo">
+			<img src="" alt="logo" class="logo-default" height="31px">
+			<div class="menu-toggler sidebar-toggler hide">
+					<!-- DOC: Remove the above "hide" to enable the sidebar toggler button on header -->
+			</div>
+		</div>
+			<!-- END LOGO -->
+			<!-- BEGIN RESPONSIVE MENU TOGGLER -->
+		<a href="javascript:;" class="menu-toggler responsive-toggler" data-toggle="collapse" data-target=".navbar-collapse">
+		</a>
+			<!-- END RESPONSIVE MENU TOGGLER -->
+			<!-- BEGIN TOP NAVIGATION MENU -->
+		<div class="top-menu">
+			<ul class="nav navbar-nav pull-right">
+				<li class="dropdown dropdown-user">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
+						<span class="username username-hide-on-mobile">
+						@request.session.get("projectName") </span>
+						<i class="fa fa-angle-down"></i>
+					</a>
+					<ul class="dropdown-menu" id="projects">
+
+					</ul>
+				</li>
+
+				<li class="dropdown dropdown-quick-sidebar-toggler">
+					<a href="@routes.IndexController.toIndex()" class="dropdown-toggle">
+						<i class="fa fa-home"></i>
+					</a>
+				</li>
+
+			</ul>
+		</div>
+	</div>
+</div>
+
+<script>
+		$(function () {
+			$.ajax({
+				url: "@routes.IndexController.getAllProteinProject()",
+				type: "get",
+				dataType: "json",
+				success: function (data) {
+					var projectNames = $.map(data, function (v) {
+						return v.projectname
+					})
+					var filterProjectNames = $.grep(projectNames, function (v) {
+						var projectName = "@request.session.get("projectName").get"
+						return v !== projectName
+					})
+					var html = $.map(filterProjectNames, function (v) {
+						return "<li><a href='/p3bacter/user/protein/toIndex?projectName=" + v + "'>" + v + " </a> </li>"
+					}).join(" ")
+					$("#projects").html(html)
+
+				}
+			})
+
+
+		})
+
+</script>

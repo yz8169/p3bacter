@@ -1,0 +1,521 @@
+@()(implicit request: RequestHeader)
+	@user.protein.main("差异分析（T/U检验）")("differenceAna") {
+		<div class="page-content">
+
+			<div class="page-bar">
+				<ul class="page-breadcrumb">
+					<li>
+						<i class="fa fa-delicious"></i>
+						<a href="#">差异分析（T/U检验）</a>
+					</li>
+				</ul>
+			</div>
+
+
+			<div class="row-fluid">
+
+				<div class="row">
+					<div class="col-md-12 col-sm-12">
+						<div class="portlet green-jungle box">
+							<div class="portlet-title">
+								<div class="caption">
+									检验方法
+								</div>
+							</div>
+
+							<div class="portlet-body">
+
+								<form class="registration-form form-horizontal" accept-charset="UTF-8" method="post">
+
+									<div class="form-group">
+										<label class="control-label col-sm-2">方法:</label>
+										<div class="col-sm-3">
+											<select class="form-control" name="method" onchange="mChange(this)">
+												<option value="tTest" selected="selected">T检验</option>
+												<option value="uTest" >U检验</option>
+											</select>
+										</div>
+									</div>
+
+								</form>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-md-12 col-sm-12">
+						<div class="portlet green-jungle box">
+							<div class="portlet-title">
+								<div class="caption">
+									设置参数
+								</div>
+							</div>
+
+							<div class="portlet-body">
+
+								<form class="registration-form form-horizontal" id="form"
+								accept-charset="UTF-8" method="post">
+
+									<input name="method" id="method" type="hidden" value="tTest">
+
+									<div class="form-group">
+										<label class="control-label col-sm-2">分组策略
+											<a href="@routes.ProteinController.groupBefore()" target="_blank"><i style="color: black" class="fa fa-eye"></i></a>
+											:</label>
+										<div class="col-sm-3">
+											<select class="form-control group" name="groupName" id="groupName" onchange="change()">
+
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group" id="paired">
+										<label class="control-label col-sm-2">进行配对样品检验？</label>
+										<div class="col-sm-3">
+											<select class="form-control" name="paired">
+												<option value="T">是</option>
+												<option value="F" selected="selected">否</option>
+											</select>
+										</div>
+									</div>
+
+
+									<div class="form-group">
+										<label class="control-label col-sm-2">p值阈值:</label>
+										<div class="col-sm-3">
+											<input class="form-control" value="0.05" name="pCutoff">
+										</div>
+
+										<label class="control-label col-sm-2">fdr阈值:</label>
+										<div class="col-sm-3">
+											<input class="form-control" value="1" name="qCutoff">
+										</div>
+									</div>
+
+									<div class="form-group">
+										<label class="control-label col-sm-2">log2FC阈值:</label>
+										<div class="col-sm-3">
+											<input class="form-control" value="1" name="logCutoff">
+										</div>
+
+										<div id="varEqual">
+											<label class="control-label col-sm-2">
+												var.equal<span id="question1" style="margin-bottom: 5px">
+												<a type="button" title="说明" data-container="body" data-toggle="popover"
+												data-placement="right" data-content="a logical variable indicating whether to treat
+										the two variances as being equal. If TRUE then the pooled variance is used to estimate the variance otherwise the Welch (or Satterthwaite) approximation to the degrees of freedom is used."
+												data-trigger="hover"><i class="fa fa-question-circle-o"></i></a>
+											</span>:</label>
+											<div class="col-sm-3">
+												<select class="form-control" name="varEqual">
+													<option value="T">True</option>
+													<option value="F" selected="selected">False</option>
+												</select>
+											</div>
+										</div>
+
+									</div>
+
+									<div class="form-group">
+										<div class="actions col-sm-offset-2 col-sm-2">
+											<button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="mySearch()">
+												运行</button>
+										</div>
+
+									</div>
+
+
+								</form>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div id="result" style="display: none">
+					<div class="row">
+						<div class="col-md-12 col-sm-12">
+							<div class="portlet green-jungle box">
+								<div class="portlet-title">
+									<div class="caption">
+										差异分析结果
+									</div>
+									<div class="tools">
+										<a href="javascript:;" class="collapse">
+										</a>
+									</div>
+								</div>
+
+								<div class="portlet-body" id="noCotent">暂无差异分析结果！</div>
+								<div class="portlet-body" style="display: none;" id="content">
+									<label>显示的列:</label>
+									<div id="checkbox" class="checkbox">
+
+									</div>
+
+									<div class="table-responsive" id="tableContent">
+										<table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
+										data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100, all]" data-multiple-search="true"
+										data-show-export="true" data-export-types="['excel','txt']" data-export-data-type="all"
+										>
+											<thead>
+												<th data-field='geneId' data-sortable='true' id="marker"
+												data-formatter="diffProteinIDFmt">蛋白ID</th>
+											</thead>
+										</table>
+
+									</div>
+
+
+									<div style="margin-top: 10px">
+										<label>对差异蛋白进行:</label>
+										<div class="row">
+											<div class="col-sm-2">
+												<button type="button" class="btn btn-primary" style="width: 90%;" id="search"
+												onclick="goEnrich()">
+													GO富集分析</button>
+											</div>
+											<div class="col-sm-2">
+												<form target="_blank" method="post" id="geneIdForm">
+													<input type="hidden" id="geneIdStr" name="geneIdStr">
+												</form>
+												<button type="button" class="btn btn-primary" style="width: 90%;" onclick="keggEnrich()">
+													KEGG富集分析</button>
+											</div>
+											<div class="col-sm-2">
+												<button type="button" class="btn btn-primary" style="width: 90%;" id="search"
+												onclick="heatmap()">
+													热图分析</button>
+											</div>
+											<div class="col-sm-2">
+												<button type="button" class="btn btn-primary" style="width: 90%;" id="search"
+												onclick="expressPattern()">
+													表达模式分析</button>
+											</div>
+											<div class="col-sm-2">
+												<button type="button" class="btn btn-primary" style="width: 90%;" id="search"
+												onclick="roc()">
+													ROC曲线分析</button>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div>
+
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-md-12 col-sm-12">
+							<div class="portlet green-jungle box">
+								<div class="portlet-title">
+									<div class="caption">
+										火山图
+									</div>
+									<div class="tools">
+										<a href="javascript:;" class="collapse">
+										</a>
+									</div>
+								</div>
+
+								<div class="portlet-body" id="noCotent">
+									<div align="center">
+										<div id="charts">没有图片结果生成！</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+			</div>
+
+		</div>
+
+
+		<script>
+				var groupName;
+				var keggStr;
+				var geneIdStr;
+
+				function diffProteinIDFmt(value, row, index) {
+					return "<a onclick=\"showDiffExp('" + value + "')\">" + value + "</a>"
+				}
+
+				function showDiffExp(value) {
+					var html = "\t<div id='exp'><div id=\"addRelation\" class=\"modal fade\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myModalLabel\" aria-hidden=\"true\">\n" +
+							"\t\t\t\t\t\t\t\t\t<div class=\"modal-dialog\" style=\"width: 1070px\">\n" +
+							"\t\t\t\t\t\t\t\t\t\t<div class=\"modal-content\">\n" +
+							"\t\t\t\t\t\t\t\t\t\t\t<div class=\"modal-header bg-primary\">\n" +
+							"\t\t\t\t\t\t\t\t\t\t\t\t<button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\"></button>\n" +
+							"\t\t\t\t\t\t\t\t\t\t\t\t<h4 class=\"modal-title\">\n" +
+							"\t\t\t\t\t\t\t\t\t\t\t\t\t<span id=\"lblAddTitle\" style=\"font-weight: bold\">表达信息柱状图</span>\n" +
+							"\t\t\t\t\t\t\t\t\t\t\t\t</h4>\n" +
+							"\t\t\t\t\t\t\t\t\t\t\t</div>\n" +
+							"\t\t\t\t\t\t\t\t\t\t\t\t<div class=\"modal-body\" align='center'>\n" +
+							"\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div id=\"expCharts\" >\n" +
+							"\n" +
+							"\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n" +
+							"\t\t\t\t\t\t\t\t\t\t\t\t</div>\n" +
+							"\t\t\t\t\t\t\t\t\t\t</div>\n" +
+							"\t\t\t\t\t\t\t\t\t</div>\n" +
+							"\t\t\t\t\t\t\t\t</div></div>"
+					var expHtml = $("#exp").html()
+					if (typeof(expHtml) === "undefined") {
+						$("body").append(html)
+					}
+
+					var index = layer.load(0, {shade: false})
+					$.ajax({
+						url: "@routes.ProteinController.plotDiffExp()",
+						type: "post",
+						data: {
+							geneId: value,
+							groupName: groupName
+						},
+						success: function (data) {
+							layer.close(index)
+							if (data.valid == "false") {
+								$("#charts").html("没有图片结果生成！")
+								swal("错误", data.message, "error")
+							} else {
+								$("#expCharts").html(data.div)
+								$("#addRelation").modal("show")
+							}
+						}
+					});
+				}
+
+				var originalHtml = ""
+				$(function () {
+					originalHtml = $("#tableContent").html()
+					$.ajax({
+						url: "@routes.ProteinController.getAllGroupNum2Names()",
+						type: "get",
+						success: function (data) {
+							$(".group").select2({
+								data: data,
+								minimumResultsForSearch: -1
+							})
+							change()
+						}
+					})
+
+					bootstrapValidator()
+				})
+
+				function keggEnrich() {
+					$("#geneIdStr").val(keggStr)
+					$("#geneIdForm").attr("action", "@routes.ProteinController.keggEnrichBefore1()")
+					$("#geneIdForm").submit()
+				}
+
+				function goEnrich() {
+					$("#geneIdStr").val(geneIdStr)
+					$("#geneIdForm").attr("action", "@routes.ProteinController.goEnrichBefore1()")
+					$("#geneIdForm").submit()
+				}
+
+				function heatmap() {
+					$("#geneIdStr").val(geneIdStr)
+					$("#geneIdForm").attr("action", "@routes.ProteinController.heatmapBefore1()")
+					$("#geneIdForm").submit()
+				}
+
+				function expressPattern() {
+					$("#geneIdStr").val(geneIdStr)
+					$("#geneIdForm").attr("action", "@routes.ProteinController.expressPatternBefore1()")
+					$("#geneIdForm").submit()
+				}
+
+				function roc() {
+					$("#geneIdStr").val(geneIdStr)
+					$("#geneIdForm").attr("action", "@routes.ProteinController.rocBefore1()")
+					$("#geneIdForm").submit()
+				}
+
+				function change() {
+					var value = $("#groupName").find(">option:selected").val()
+					$("#paired select").val("F")
+					$.ajax({
+						url: "@routes.ProteinController.checkRelation()",
+						type: "get",
+						data: {
+							"groupName": value
+						},
+						success: function (data) {
+							if (data == "True") {
+								$("#paired").show()
+							} else {
+								$("#paired").hide()
+							}
+						}
+					})
+				}
+
+				function mChange(element) {
+					var value = $(element).find(">option:selected").val()
+					$("#method").val(value)
+					if (value == "tTest") {
+						$("#varEqual").show()
+					} else {
+						$("#varEqual").hide()
+					}
+				}
+
+				function refreshContent(data) {
+					var checkboxHtml = ""
+
+					$.each(data.columnNames, function (i, v) {
+						checkboxHtml += "<label style='margin-right: 15px'>" +
+								"<input type='checkbox' checked='checked' value='" + v + "' onclick=\"setColumns('" + v + "')\">" + v +
+								"</label>"
+					})
+
+					$("#checkbox").empty().append(checkboxHtml)
+					var html = ""
+					$.each(data.columnNames, function (i, v) {
+						html += "<th data-field='" + v + "' data-sortable='true'>" + v + "</th>"
+					})
+					$("#tableContent").empty().append(originalHtml)
+					$("#marker").after(html)
+					$('#table').bootstrapTable({
+						data: data.array,
+						exportOptions: {
+							csvSeparator: "\t",
+						},
+						exportHiddenColumns: true
+					});
+					$.each(data.columnNames.slice(7), function (n, value) {
+								$('#table').bootstrapTable('hideColumn', value);
+								$("input:checkbox[value='" + value + "']").attr("checked", false)
+							}
+					);
+				}
+
+
+				function mySearch() {
+					var form = $("#form")
+					var fv = form.data("bootstrapValidator")
+					fv.validate()
+					if (fv.isValid()) {
+						var element = "<div id='content'><span id='info'>" + zhRunning + "</span>&nbsp;<img class='runningImage' src='@routes.Assets.at("images/running2.gif")' style='width: 30px;height: 20px;'></div>"
+						var index = layer.alert(element, {
+							skin: 'layui-layer-molv'
+							, closeBtn: 0,
+							title: zhInfo,
+							btn: []
+						});
+						$.ajax({
+							url: "@routes.ProteinController.differenceAna()",
+							type: "post",
+							data: $("#form").serialize(),
+							success: function (data) {
+								layer.close(index)
+								if (data.valid == "false") {
+									$("#noCotent").show()
+									$("#content").hide()
+									$("#charts").html("没有图片结果生成！")
+									swal("错误", data.message, "error")
+									$("#result").hide()
+								} else {
+									refreshContent(data)
+									$("#noCotent").hide()
+									$("#content").show()
+									$("#charts").html(data.div)
+									groupName = $("#groupName").val()
+									keggStr = data.keggStr
+									geneIdStr = data.geneIdStr
+									$("#result").show()
+								}
+							}
+						});
+
+					}
+
+				}
+
+				function bootstrapValidator() {
+					var infinityNumber = Number.MAX_VALUE
+					$('#form').bootstrapValidator({
+						framework: 'bootstrap',
+						icon: {
+							valid: 'glyphicon glyphicon-ok',
+							invalid: 'glyphicon glyphicon-remove',
+							validating: 'glyphicon glyphicon-refresh'
+						},
+						fields: {
+							pCutoff: {
+								validators: {
+									notEmpty: {
+										message: 'p值阈值不能为空！'
+									},
+									numeric: {
+										message: "p值阈值必须为数字！"
+									},
+									between: {
+										min: "0",
+										max: 1,
+										message: "p值阈值必须在0到1之间！"
+									}
+								}
+							},
+							logCutoff: {
+								validators: {
+									notEmpty: {
+										message: 'log2FC阈值不能为空！'
+									},
+									numeric: {
+										message: "log2FC阈值必须为数字！"
+									}
+								}
+							},
+							qCutoff: {
+								validators: {
+									notEmpty: {
+										message: "fdr阈值不能为空！"
+									},
+									numeric: {
+										message: "fdr阈值必须为数字！"
+									},
+									between: {
+										min: 0,
+										max: 1,
+										message: "fdr阈值必须在0到1之间！"
+									}
+								}
+							},
+							groupName: {
+								validators: {
+									callback: {
+										message: '请至少选择一个分组策略！',
+										callback: function (value, validator, $field) {
+											var options = validator.getFieldElements('groupName').val();
+											return (options != null);
+										}
+									}
+								}
+							},
+
+						}
+					});
+				}
+
+				function setColumns(value) {
+					var element = $("input:checkbox[value='" + value + "']")
+					if (element.is(":checked")) {
+						$('#table').bootstrapTable('showColumn', value);
+					} else {
+						$('#table').bootstrapTable('hideColumn', value);
+					}
+				}
+
+		</script>
+
+	}

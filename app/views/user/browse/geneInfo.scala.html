@@ -1,0 +1,75 @@
+@(sampleName: String)(implicit request: RequestHeader)
+	@main("基因信息") {
+	<style>
+		#toolbar a:not(:first-child){
+			margin-left: 50px;
+		}
+		#toolbar .btn{
+			padding: 2px 12px;
+			background: #344A76;
+		}
+
+	</style>
+
+		<div class="row">
+			<div class="form-group col-sm-12">
+				<h2 class="page-heading"
+				style="text-align: left;
+					border-bottom: 5px solid #e9f3f4">基因信息(@sampleName)</h2>
+			</div>
+		</div>
+
+		<div id="toolbar">
+			<a type="button" class="btn btn-primary" href="@routes.BrowseController.downloadDataFile()?sampleName=@sampleName&kind=genome" >
+				<i class="fa fa-download"></i>&nbsp;下载基因组序列(fa)
+			</a>
+			<a type="button" class="btn btn-primary" id="deleteButton" href="@routes.BrowseController.downloadDataFile()?sampleName=@sampleName&kind=cds">
+				<i class="fa fa-download"></i>&nbsp;下载基因序列(fa)
+			</a>
+			<a type="button" class="btn btn-primary" href="@routes.BrowseController.downloadDataFile()?sampleName=@sampleName&kind=pep" >
+				<i class="fa fa-download"></i>&nbsp;下载蛋白序列(fa)
+			</a>
+		</div>
+
+		<table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
+		data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100, all]" data-multiple-search="true">
+			<thead>
+				<tr>
+					<th data-field="name" data-sortable="true"
+					data-formatter="locusNameFmt">Name</th>
+					<th data-field="start" data-sortable="true">Start</th>
+					<th data-field="end" data-sortable="true">End</th>
+					<th data-field="strand" data-sortable="true">Strand</th>
+					<th data-field="product" data-sortable="true">Product</th>
+				</tr>
+			</thead>
+		</table>
+
+
+		<script>
+				function locusNameFmt(value, row, index) {
+					var href="@routes.BrowseController.getGeneDetailInfo()?sampleName=@sampleName&locusName="+value
+					return "<a style='cursor: pointer;'  target='_blank' href='"+href+"'>" + value + "</a>"
+				}
+
+				$(function () {
+
+					$.ajax({
+						url: "@routes.BrowseController.getAllGeneInfo()",
+						type: "get",
+						data: {
+							sampleName: "@sampleName"
+						},
+						dataType: "json",
+						success: function (data) {
+							$('#table').bootstrapTable({
+								data: data
+							});
+						}
+					})
+
+				})
+		</script>
+
+
+	}

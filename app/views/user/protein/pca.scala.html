@@ -1,0 +1,325 @@
+@()(implicit request: RequestHeader)
+	@user.protein.main("主成分分析")("pca") {
+		<div class="page-content">
+
+			<div class="page-bar">
+				<ul class="page-breadcrumb">
+					<li>
+						<i class="fa fa-support"></i>
+						<a href="#">主成分分析</a>
+					</li>
+				</ul>
+			</div>
+
+
+			<div class="row-fluid">
+
+				<div class="row">
+					<div class="col-md-12 col-sm-12">
+						<div class="portlet green-jungle box">
+							<div class="portlet-title">
+								<div class="caption">
+									设置参数
+								</div>
+							</div>
+
+							<div class="portlet-body">
+
+								<form class="registration-form form-horizontal" id="form"
+								accept-charset="UTF-8" method="post">
+
+									<div class="form-group">
+										<label class="control-label col-sm-2">样品提供方式:</label>
+										<div class="col-sm-3">
+											<select class="form-control" name="method" id="groupName" onchange="change()">
+												<option value="hand" selected="selected">手动选择</option>
+												<option value="db" >分组策略</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group" id="myGroup" style="display: none">
+										<label class="control-label col-sm-2">
+											分组策略 <a href="@routes.ProteinController.groupBefore()" target="_blank"><i style="color: black" class="fa fa-eye"></i></a>
+											:</label>
+										<div class="col-sm-3">
+											<select class="form-control group" name="groupName" id="groupName" style="width: 100%">
+
+											</select>
+										</div>
+									</div>
+
+									<div id="hand">
+										<div class="form-group">
+											<label class="control-label col-sm-2">样品:</label>
+											<div class="col-sm-6" >
+												<div class='checkbox' id='sampleName'></div>
+											</div>
+										</div>
+
+										<div class="form-group">
+											<div class="actions col-sm-offset-2 col-sm-1">
+												<button type="button" class="btn btn-default" id="search" onclick="selectAll()">
+													全选</button>
+											</div>
+											<div class="actions col-sm-3">
+												<button type="button" class="btn btn-default" id="search" onclick="reverseSelect()">
+													反选</button>
+											</div>
+										</div>
+									</div>
+
+									<div class="form-group" id="paired">
+										<label class="control-label col-sm-2">
+											数据变换方法<span id="question5" style="margin-bottom: 5px">
+											<a type="button" title="说明" data-container="body" data-toggle="popover"
+											data-placement="right" data-content="预处理后的数据经过变换后，进行PCA的计算和绘制。"
+											data-trigger="hover"><i class="fa fa-question-circle-o" ></i></a>
+										</span>:</label>
+										<div class="col-sm-4">
+											<select class="form-control" name="dtMethod" required="required" style="border-radius: 4px;">
+												<option value="none">None</option>
+												<option value="log2" selected="selected">log2_transform:
+													log2(value+1)</option>
+												<option value="log2_center">log2_transform_row_median_center:
+													scale(log2(value+1))</option>
+												<option value="center">row_median_center: scale(value)</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group">
+										<label class="control-label col-sm-2">X轴:</label>
+										<div class="col-sm-2">
+											<div class="input-group">
+												<span class="input-group-addon">PC</span>
+												<input name="x" class="form-control" value="1"
+												style="border-bottom-right-radius: 4px;
+													border-top-right-radius: 4px" >
+											</div>
+										</div>
+
+									</div>
+									<div class="form-group">
+										<label class="control-label col-sm-2 ">Y轴:</label>
+										<div class="col-sm-2">
+											<div class="input-group ">
+												<span class="input-group-addon">PC</span>
+												<input name="y" class="form-control" value="2"
+												style="border-bottom-right-radius: 4px;
+													border-top-right-radius: 4px" >
+											</div>
+										</div>
+									</div>
+
+									<div class="form-group">
+										<div class="actions col-sm-offset-2 col-sm-2">
+											<button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="mySearch()">
+												运行</button>
+										</div>
+									</div>
+
+
+								</form>
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div id="result" style="display: none">
+					<div class="row">
+						<div class="col-md-12 col-sm-12">
+							<div class="portlet green-jungle box">
+								<div class="portlet-title">
+									<div class="caption">
+										PCA图
+									</div>
+									<div class="tools">
+										<a href="javascript:;" class="collapse">
+										</a>
+									</div>
+								</div>
+
+								<div class="portlet-body">
+									<div id="charts" align="center">
+										<div style="width: 100%">没有图片结果生成！</div></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+			</div>
+
+		</div>
+
+		<script>
+				var originalHtml = ""
+				$(function () {
+					originalHtml = $("#tableContent").html()
+
+					$.ajax({
+						url: "@routes.ProteinController.getSampleNames()",
+						type: "get",
+						async: false,
+						success: function (data) {
+							$("#sampleName").empty()
+							$.each(data.sampleNames, function (i, v) {
+								var html = "<label style='margin-right: 15px;width: 100px;padding-top: 7px;'>" +
+										"<input type='checkbox'  name='sampleName[]'  value='" + v + "'>" + v +
+										"</label>"
+								$("#sampleName").append(html);
+							})
+						}
+					})
+
+					$.ajax({
+						url: "@routes.ProteinController.getAllGroupNames()",
+						type: "get",
+						success: function (data) {
+							$(".group").select2({
+								data: data,
+								minimumResultsForSearch: -1
+							})
+						}
+					})
+
+					bootstrapValidator()
+				})
+
+				function selectAll() {
+					$(":checkbox").prop("checked", true)
+					$("#form").bootstrapValidator("revalidateField", "sampleName[]")
+				}
+
+				function reverseSelect() {
+					$(":checkbox").each(function () {
+						$(this).prop("checked", !$(this).prop("checked"));
+					});
+					$("#form").bootstrapValidator("revalidateField", "sampleName[]")
+
+				}
+
+				function change() {
+					var value = $("#groupName").find(">option:selected").val()
+					if (value == "db") {
+						$("#hand").hide()
+						$("#myGroup").show()
+					} else {
+						$("#myGroup").hide()
+						$("#hand").show()
+					}
+				}
+
+				function mySearch() {
+					var form = $("#form")
+					var fv = form.data("bootstrapValidator")
+					fv.validate()
+					if (fv.isValid()) {
+						var element = "<div id='content'><span id='info'>" + zhRunning + "</span>&nbsp;<img class='runningImage' src='@routes.Assets.at("images/running2.gif")' style='width: 30px;height: 20px;'></div>"
+						var index = layer.alert(element, {
+							skin: 'layui-layer-molv'
+							, closeBtn: 0,
+							title: zhInfo,
+							btn: []
+						});
+
+						$.ajax({
+							url: "@routes.ProteinController.pca()",
+							type: "post",
+							data: $("#form").serialize(),
+							success: function (data) {
+								layer.close(index)
+								if (data.valid == "false") {
+									$("#charts").html("没有图片结果生成！")
+									swal("错误", data.message, "error")
+									$("#result").hide()
+								} else {
+									$("#charts").html(data.div)
+									$("#result").show()
+								}
+							}
+						});
+
+					}
+
+
+				}
+
+				function bootstrapValidator() {
+					var infinityNumber = Number.MAX_VALUE
+					$('#form').bootstrapValidator({
+						framework: 'bootstrap',
+						icon: {
+							valid: 'glyphicon glyphicon-ok',
+							invalid: 'glyphicon glyphicon-remove',
+							validating: 'glyphicon glyphicon-refresh'
+						},
+						fields: {
+							'sampleName[]': {
+								validators: {
+									choice: {
+										min: 2,
+										message: '样品数量必须大于2！'
+									}
+								}
+							},
+							x: {
+								validators: {
+									notEmpty: {
+										message: "X轴不能为空！"
+									},
+									integer: {
+										message: "必须为整数！"
+									},
+									between: {
+										min: 0,
+										max: infinityNumber,
+										inclusive: false,
+										message: "必须为正整数！"
+									},
+
+								}
+							},
+							y: {
+								validators: {
+									notEmpty: {
+										message: "y轴不能为空！"
+									},
+									integer: {
+										message: "必须为整数！"
+									},
+									different: {
+										field: 'x',
+										message: 'X轴Y轴不能相同！'
+									},
+									between: {
+										min: 0,
+										max: infinityNumber,
+										inclusive: false,
+										message: "必须为正整数！"
+									},
+
+								}
+							},
+							groupName: {
+								validators: {
+									callback: {
+										message: '请至少选择一个分组策略！',
+										callback: function (value, validator, $field) {
+											var options = validator.getFieldElements('groupName').val();
+											return (options != null);
+										}
+									}
+								}
+							},
+
+						}
+					});
+				}
+
+		</script>
+
+	}

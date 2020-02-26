@@ -1,0 +1,125 @@
+@import models.Tables.GeneinfoRow
+@(geneInfo: GeneinfoRow)(implicit request: RequestHeader)
+@main("基因详细信息") {
+	<style>
+			th {
+				width: 20%;
+			}
+			.myTd {
+				max-height: 150px;
+				overflow: auto;
+				padding-right: 25px;
+			}
+
+	</style>
+	<div class="row">
+		<div class="form-group col-sm-12">
+			<h2 class="page-heading"
+			style="text-align: left;
+				border-bottom: 5px solid #e9f3f4">基因详细信息</h2>
+		</div>
+	</div>
+	<div class="table-responsive">
+		<table class="table table-striped table-hover table-bordered" style="table-layout: fixed;
+			word-wrap: break-word">
+			<tbody>
+				<tr>
+					<th>Sample Name</th>
+					<td>
+					@geneInfo.samplename
+					</td>
+				</tr>
+
+				<tr>
+					<th>Genome sequence name</th>
+					<td>
+					@geneInfo.seqname
+					</td>
+				</tr>
+
+				<tr>
+					<th>Gene name</th>
+					<td>
+					@geneInfo.proteinid
+					</td>
+				</tr>
+
+
+				<tr>
+					<th>Gene start</th>
+					<td>
+					@geneInfo.start
+					</td>
+				</tr>
+				<tr>
+					<th>Gene end</th>
+					<td>
+					@geneInfo.end
+					</td>
+				</tr>
+				<tr>
+					<th>Strand</th>
+					<td>
+					@geneInfo.strand
+					</td>
+				</tr>
+				<tr>
+					<th>Product</th>
+					<td>
+					@geneInfo.product
+					</td>
+				</tr>
+				<tr>
+					<th>CDS
+						<button class="btn-link" onclick="downloadCds()"><i class="fa fa-download"></i></button>
+					</th>
+					<td class="monospace">
+						<div class="myTd">
+							>@(geneInfo.proteinid)<br>
+							<div id="cds">
+							@geneInfo.gene
+							</div>
+						</div>
+
+					</td>
+				</tr>
+				<tr>
+					<th>PEP
+						<button class="btn-link" onclick="downloadPep()"><i class="fa fa-download"></i></button>
+					</th>
+					<td class="monospace">
+						<div class="myTd">
+							>@(geneInfo.proteinid)<br>
+							<div id="pep">
+							@geneInfo.pep
+							</div>
+						</div>
+
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<script>
+			function downloadCds() {
+				var fileName = "cds.fa"
+				var content = ">@geneInfo.proteinid\n" + $("#cds").text().trim()
+				var blob = new Blob([content], {
+					type: "text/plain;charset=utf-8"
+				})
+				saveAs(blob, fileName)
+			}
+
+			function downloadPep() {
+				var fileName = "pep.fa"
+				var content = ">@geneInfo.proteinid\n" + $("#pep").text().trim()
+				var blob = new Blob([content], {
+					type: "text/plain;charset=utf-8"
+				})
+				saveAs(blob, fileName)
+			}
+
+
+	</script>
+}

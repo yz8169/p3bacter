@@ -1,0 +1,127 @@
+@(id: String)(implicit request: RequestHeader)
+<div class="page-sidebar-wrapper">
+	<div class="page-sidebar navbar-collapse collapse">
+		<ul class="page-sidebar-menu " data-auto-scroll="true" data-slide-speed="200" id="projects">
+
+			<li class="sidebar-toggler-wrapper">
+					<!-- BEGIN SIDEBAR TOGGLER BUTTON -->
+				<div class="sidebar-toggler">
+				</div>
+					<!-- END SIDEBAR TOGGLER BUTTON -->
+			</li>
+			<li style="height: 10px"></li>
+
+			<li id='view'>
+				<a href='@routes.ProteinController.toIndex(request.session.get("projectName").get)'>
+					<i class='fa fa-table'></i>
+					<span class='title'>数据一览（预处理）</span>
+					<span class='selected'></span>
+				</a>
+			</li>
+
+			<li id='group'>
+				<a href='@routes.ProteinController.groupBefore()'>
+					<i class='fa fa-group'></i>
+					<span class='title'>分组</span>
+					<span class='selected'></span>
+				</a>
+			</li>
+
+			<li id='differenceAna'>
+				<a href='@routes.ProteinController.differenceAnaBefore()'>
+					<i class='fa fa-delicious'></i>
+					<span class='title'>差异分析</span>
+					<span class='selected'></span>
+				</a>
+			</li>
+
+			@*<li id='deal'>*@
+				@*<a href='@routes.UserController.dealBefore()'>*@
+					@*<i class='fa fa-sitemap'></i>*@
+					@*<span class='title'>数据预处理</span>*@
+					@*<span class='selected'></span>*@
+				@*</a>*@
+			@*</li>*@
+
+
+
+			<li id='goEnrich'>
+				<a href='@routes.ProteinController.goEnrichBefore()'>
+					<i class='fa fa-map'></i>
+					<span class='title'>蛋白GO富集分析</span>
+					<span class='selected'></span>
+				</a>
+			</li>
+
+			<li id='keggEnrich'>
+				<a href='@routes.ProteinController.keggEnrichBefore()'>
+					<i class='fa fa-map-signs'></i>
+					<span class='title'>蛋白KEGG富集分析</span>
+					<span class='selected'></span>
+				</a>
+			</li>
+
+			<li id='heatmap'>
+				<a href='@routes.ProteinController.heatmapBefore()'>
+					<i class='fa fa-snowflake-o'></i>
+					<span class='title'>热图</span>
+					<span class='selected'></span>
+				</a>
+			</li>
+
+			<li id='pca'>
+				<a href='@routes.ProteinController.pcaBefore()'>
+					<i class='fa fa-support'></i>
+					<span class='title'>主成分分析</span>
+					<span class='selected'></span>
+				</a>
+			</li>
+
+			<li id='hCluster'>
+				<a href='@routes.ProteinController.hClusterBefore()'>
+					<i class='fa fa-tree'></i>
+					<span class='title'>聚类树分析</span>
+					<span class='selected'></span>
+				</a>
+			</li>
+
+
+
+			<li id='roc'>
+				<a href='@routes.ProteinController.rocBefore()'>
+					<i class='fa fa-line-chart'></i>
+					<span class='title'>ROC曲线</span>
+					<span class='selected'></span>
+				</a>
+			</li>
+
+			<li id='expressPattern'>
+				<a href='@routes.ProteinController.expressPatternBefore()'>
+					<i class='fa fa-area-chart'></i>
+					<span class='title'>表达模式分析</span>
+					<span class='selected'></span>
+				</a>
+			</li>
+
+			<li id='expressPattern'>
+				<a href='http://jvenn.toulouse.inra.fr/app/example.html' target="_blank">
+					<i class='fa fa-pie-chart'></i>
+					<span class='title'>维恩图</span>
+					<span class='selected'></span>
+				</a>
+			</li>
+
+
+		</ul>
+	</div>
+</div>
+<script>
+		$(function () {
+			var menuContainer = jQuery('.page-sidebar ul');
+			menuContainer.children('li.active').removeClass('active');
+			$("#" + "@id").addClass('active')
+
+
+		})
+
+</script>

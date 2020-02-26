@@ -1,0 +1,375 @@
+@()(implicit request: RequestHeader)
+@main("GeneWise") {
+
+	<div class="row">
+		<div class="form-group col-sm-12">
+			<h2 class="page-heading"
+			style="text-align: left;
+				border-bottom: 5px solid #e9f3f4">GeneWise(将蛋白质序列和DNA序列进行比对，从而对DNA序列上的编码区进行预测)</h2>
+		</div>
+	</div>
+
+	<form class="registration-form form-horizontal" id="form" accept-charset="UTF-8">
+
+		<div class="form-group">
+			<label class="control-label col-sm-2">Type of protein sequence:</label>
+			<div class="col-sm-3">
+				<select class="form-control" onchange="proteinChange(this)" name="proteinMethod">
+					<option selected value="text">Text</option>
+					<option value="file">File</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="form-group" id="proteinTextContent">
+			<label class="control-label col-sm-2">Protein sequence:</label>
+			<div class="col-sm-8">
+				<textarea class="form-control monospace" name="proteinText" id="proteinText" rows="7"></textarea>
+				<span class="help-block">e.g.,&nbsp;<a href="#"><em id="egProtein">
+					示例</em></a></span>
+			</div>
+		</div>
+
+		<div id="proteinFileContent" style="display: none;">
+			<div class="form-group">
+				<label class="control-label col-sm-2">Protein sequence File:</label>
+				<div class="col-sm-8">
+					<input id="input-1" type="file" class="file control-label" name="proteinFile" data-show-preview="false"
+					data-show-upload="false" accept="fa,fasta">
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="control-label col-sm-2">Type of DNA sequence:</label>
+			<div class="col-sm-3">
+				<select class="form-control" onchange="dnaChange(this)" name="dnaMethod">
+					<option selected value="text">Text</option>
+					<option value="file">File</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="form-group" id="dnaTextContent">
+			<label class="control-label col-sm-2">DNA sequence:</label>
+			<div class="col-sm-8">
+				<textarea class="form-control monospace" name="dnaText" id="dnaText" rows="7"></textarea>
+				<span class="help-block">e.g.,&nbsp;<a href="#"><em id="egDna">
+					示例</em></a></span>
+			</div>
+		</div>
+
+		<div id="dnaFileContent" style="display: none;">
+			<div class="form-group">
+				<label class="control-label col-sm-2">DNA sequence File:</label>
+				<div class="col-sm-8">
+					<input id="input-1" type="file" class="file control-label" name="dnaFile" data-show-preview="false"
+					data-show-upload="false" accept="fa,fasta">
+				</div>
+			</div>
+		</div>
+
+
+		<div class="form-group">
+			<label class="control-label col-sm-2">Show Parameters:</label>
+			<div class="col-sm-2">
+				<select id="para" name="para" class="form-control">
+					<option selected="selected" value="true">
+						ON</option> <option value="false">OFF</option> </select>
+			</div>
+
+			<label class="control-label col-sm-2">Pretty ASCII:</label>
+			<div class="col-sm-2">
+				<select id="pretty" name="pretty" class="form-control">
+					<option selected="selected" value="true">ON</option>
+					<option value="false">OFF</option> </select>
+			</div>
+
+			<label class="control-label col-sm-2">Gene Structure:</label>
+			<div class="col-sm-2">
+				<select id="genes" name="genes" class="form-control">
+					<option selected="selected" value="true">ON</option>
+					<option value="false">OFF</option>
+				</select>
+			</div>
+
+		</div>
+
+		<div class="form-group">
+			<label class="control-label col-sm-2">Protein Translation:</label>
+			<div class="col-sm-2">
+				<select id="trans" name="trans" class="form-control">
+					<option selected="selected" value="true">ON</option> <option value="false">OFF</option> </select>
+			</div>
+
+			<label class="control-label col-sm-2">cDNA:</label>
+			<div class="col-sm-2">
+				<select id="cdna" name="cdna" class="form-control">
+					<option selected="selected" value="true">ON</option> <option value="false">OFF</option> </select>
+			</div>
+
+			<label class="control-label col-sm-2">EMBL Feature Table:</label>
+			<div class="col-sm-2">
+				<select id="embl" name="embl" class="form-control">
+					<option selected="selected" value="true">ON</option> <option value="false">OFF</option> </select>
+			</div>
+		</div>
+
+		<div id="args" style="display: none;">
+
+			<div class="form-group">
+				<label class="control-label col-sm-2">Ace File Gene Structure:</label>
+				<div class="col-sm-2">
+					<select id="ace" name="ace" class="form-control">
+						<option selected="selected" value="true">ON</option> <option value="false">OFF</option> </select>
+				</div>
+
+				<label class="control-label col-sm-2">GFF Output:</label>
+				<div class="col-sm-2">
+					<select id="gff" name="gff" class="form-control">
+						<option selected="selected" value="true">ON</option> <option value="false">OFF</option> </select>
+				</div>
+
+				<label class="control-label col-sm-2">EMBL Feature For diana:</label>
+				<div class="col-sm-2">
+					<select id="diana" name="diana" class="form-control">
+						<option selected="selected" value="true">ON</option> <option value="false">OFF</option> </select>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label class="control-label col-sm-2">Local/Global Mode:</label>
+				<div class="col-sm-2">
+					<select id="init" name="init" class="form-control">
+						<option selected="selected" value="local">Local</option> <option value="global">
+						Global</option> </select>
+				</div>
+
+				<label class="control-label col-sm-2">Splice Site:</label>
+				<div class="col-sm-2">
+					<select id="splice" name="splice" class="form-control">
+						<option value="model">Modelled</option> <option selected="selected" value="flat">
+						GT/AG only</option> </select>
+				</div>
+
+				<label class="control-label col-sm-2">Random (Null) Model:</label>
+				<div class="col-sm-2">
+					<select id="random" name="random" class="form-control">
+						<option selected="selected" value="syn">Synchronous model</option> <option value="flat">
+						Flat model</option> </select>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label class="control-label col-sm-2">Algorithm:</label>
+				<div class="col-sm-2">
+					<select id="alg" name="alg" class="form-control">
+						<option selected="selected" value="623">GeneWise 623</option> <option value="2193">
+						GeneWise 2193</option> </select>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="form-group">
+			<div class="actions col-sm-offset-2 col-sm-3">
+				<button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="showMoreArgs(this)">
+					展开更多参数</button>
+			</div>
+		</div>
+
+
+		<div class="form-group">
+			<div class="actions col-sm-offset-2 col-sm-3">
+				<button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="mySearch()">
+					运行</button>
+			</div>
+		</div>
+
+
+	</form>
+	<hr>
+	<div id="result" style="display: none;">
+		<h4>GeneWise分析结果:
+			&nbsp;
+			<a href="javascript:downloadOut()" style='cursor: pointer;'><span><em class='fa fa-download'></em></span></a>
+		</h4>
+		<pre id="out" style="background-color: white"></pre>
+	</div>
+
+	<script>
+
+			function downloadOut() {
+				var fileName = "genewise.txt"
+				var content = $("#out").text()
+				var blob = new Blob([content], {
+					type: "text/plain;charset=utf-8"
+				})
+				saveAs(blob, fileName)
+			}
+
+			function proteinChange(element) {
+				var value = $(element).find(">option:selected").val()
+				if (value == "text") {
+					$("#proteinTextContent").show()
+					$("#proteinFileContent").hide()
+				} else {
+					$("#proteinTextContent").hide()
+					$("#proteinFileContent").show()
+				}
+			}
+
+			function dnaChange(element) {
+				var value = $(element).find(">option:selected").val()
+				if (value == "text") {
+					$("#dnaTextContent").show()
+					$("#dnaFileContent").hide()
+				} else {
+					$("#dnaTextContent").hide()
+					$("#dnaFileContent").show()
+				}
+			}
+
+			$(function () {
+
+				bootstrapValidator()
+
+				$('#egProtein').click(function () {
+					var eg = ">AK058311 \"AK058311\",1615,\"\",\"\",92,1438,\"001-013-H11\"\n" +
+							"MGQGTPGGMGKQGGAPGDRKPGGDGDKKDRKFEPPAAPSRVGRKQRKQKGPEAAARLPNV\n" +
+							"VMKVEKAPLESYADIGGLDAQIQEIKEAVELPLTHPELYEDIGIRPPKGVILYGEPGTGK\n" +
+							"KVTHADFKKAKEKVMFKKKEGVPEGLYM "
+					$('#proteinText').val(eg);
+					$("#form").bootstrapValidator("revalidateField", "proteinText")
+					return false
+				});
+
+				$('#egDna').click(function () {
+					var eg = ">AK058311_Chr03_11499998_11507414\n" +
+							"AATATCACCAGTGTCTTATAAGCAATTACACCAATTTTATTGGGGGTGTTCCTCAATAGT\n" +
+							"TCGACGATCATGATGTCATGTCACCGAGGAATGAAAACGGAGCAGATAATTCTCTAATAG\n" +
+							"TGAGACATACTCCAATTCTTTATAACTCTACCACCTTCAATATACCTTTTAGATTTTATA\n" +
+							"AAGCCCAAGATACTTGAAAAGAACAGAAAAACAGAAG"
+					$('#dnaText').val(eg);
+					$("#form").bootstrapValidator("revalidateField", "dnaText")
+					return false
+				});
+
+			})
+
+			function showMoreArgs(element) {
+				if ($(element).text().trim() == "展开更多参数") {
+					$(element).text("折叠更多参数")
+					$("#args").show()
+				} else {
+					$(element).text("展开更多参数")
+					$("#args").hide()
+				}
+			}
+
+			function mySearch() {
+				var value = $("#geneId").val()
+				var form = $("#form")
+				var fv = form.data("bootstrapValidator")
+				fv.validate()
+				if (fv.isValid()) {
+					var form1 = new FormData($("#form")[0]);
+					if (fileExist()) {
+						zhRunning = "正在上传文件"
+					}
+					var element = "<div id='content'><span id='info'>" + zhRunning + "</span><span id='progress'></span>&nbsp;<img class='runningImage' src='@routes.Assets.at("images/running2.gif")' style='width: 30px;height: 20px;'></div>"
+					var index = layer.alert(element, {
+						skin: 'layui-layer-molv'
+						, closeBtn: 0,
+						title: zhInfo,
+						btn: []
+					});
+					$.ajax({
+						xhr: function () {
+							var myXhr = $.ajaxSettings.xhr();
+							if (myXhr.upload) {
+								myXhr.upload.addEventListener('progress', progressHandlingFunction, false);
+							}
+							return myXhr
+						},
+						url: "@routes.MultiOmicsController.geneWise()",
+						type: "post",
+						data: $("#form").serialize(),
+						processData: false,
+						contentType: false,
+						data: form1,
+						success: function (data) {
+							layer.close(index)
+							if (data.valid == "false") {
+								swal("Error", data.message, "error")
+								$("#result").hide()
+							} else {
+								$("#out").html(data)
+								$("#result").show()
+
+							}
+						}
+					});
+				}
+			}
+
+			function bootstrapValidator() {
+				var infinityNumber = Number.MAX_VALUE
+				$('#form').bootstrapValidator({
+					framework: 'bootstrap',
+					icon: {
+						valid: 'glyphicon glyphicon-ok',
+						invalid: 'glyphicon glyphicon-remove',
+						validating: 'glyphicon glyphicon-refresh'
+					},
+					fields: {
+						proteinText: {
+							validators: {
+								notEmpty: {
+									message: 'Protein sequence is required！'
+								},
+								regexp: {
+									regexp: /^>.*\n[a-zA-Z\n]+\s*$/,
+									message: "Protein sequence is invalid！"
+								}
+							}
+						},
+						proteinFile: {
+							validators: {
+								notEmpty: {
+									message: 'Protein sequence file不能为空！'
+								},
+								file: {
+									extension: 'fa,fasta',
+									message: 'Protein sequence file必须为fasta文件！'
+								}
+							}
+						},
+						dnaText: {
+							validators: {
+								notEmpty: {
+									message: 'DNA sequence is required！'
+								},
+								regexp: {
+									regexp: /^>.*\n[ATCGNatcgn\n]+\s*$/,
+									message: "DNA sequence is invalid！"
+								}
+							}
+						},
+						dnaFile: {
+							validators: {
+								notEmpty: {
+									message: 'DNA sequence file不能为空！'
+								},
+								file: {
+									extension: 'fa,fasta',
+									message: 'DNA sequence file必须为fasta文件！'
+								}
+							}
+						},
+					}
+				});
+			}
+
+	</script>
+}

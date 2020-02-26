@@ -1,0 +1,618 @@
+@(geneIds: Option[String])(implicit request: RequestHeader)
+@user.protein.main("蛋白KEGG富集分析")("keggEnrich") {
+	<div class="page-content">
+
+		<div class="page-bar">
+			<ul class="page-breadcrumb">
+				<li>
+					<i class="fa fa-map-signs"></i>
+					<a href="#">蛋白KEGG富集分析</a>
+				</li>
+			</ul>
+		</div>
+
+
+		<div class="row-fluid">
+
+			<div class="row">
+				<div class="col-md-12 col-sm-12">
+					<div class="portlet green-jungle box">
+						<div class="portlet-title">
+							<div class="caption">
+								设置参数
+							</div>
+						</div>
+
+						<div class="portlet-body">
+
+							<form class="registration-form" id="form"
+							accept-charset="UTF-8" method="post">
+
+								<div class="row">
+									<div class="col-sm-6">
+										<div class="form-group">
+											<label class="control-label">
+												蛋白ID，必须为一列或两列，第二列为log2FC（一行代表一个蛋白，注意前后不要有空白字符）<span id="question1" style="margin-bottom: 5px">
+												<a type="button" title="说明" data-container="body" data-toggle="popover"
+												data-placement="right" data-content="如提供log2FC信息，KEGG富集结果中，上调的蛋白被标为红色（log2FC>0），下调的蛋白被标为蓝色（log2FC<0）。"
+												data-trigger="hover"><i class="fa fa-question-circle-o"></i></a>
+											</span>:</label>
+											@if(geneIds.isDefined) {
+												<textarea name="geneId" id="geneId" class="form-control" rows="10">@geneIds.get</textarea>
+											} else {
+												<textarea name="geneId" id="geneId" class="form-control" rows="10"></textarea>
+											}
+											<span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
+												示例</em></a></span>
+										</div>
+									</div>
+								</div>
+
+								<div style="display: none">
+									<div class="row">
+										<div class="form-group  col-sm-4">
+											<label class="control-label">请选择统计检验方法:</label>
+											<select class="form-control" name="method">
+												<option value="b">binomial test</option>
+												<option value="c">chi-square test</option>
+												<option value="h" selected>
+													hypergeometric test / Fisher's exact test</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="row">
+										<div class="form-group  col-sm-4">
+											<label class="control-label">请选择错误发现率(FDR)修正方法: </label>
+											<select class="form-control" name="fdr">
+												<option value="BH" selected="selected">Benjamini and Hochberg</option>
+												<option value="BY">Benjamini and Yekutieli</option>
+												<option value="QVALUE">QVALUE</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="row">
+										<div class="col-sm-4">
+											<div class="form-group">
+												<label class="control-label">
+													设置阈值（小于这个值的项将不会进行统计检验）: </label>
+												<input class="form-control" name="cutoff" id="cutoff" value="5">
+											</div>
+										</div>
+									</div>
+
+								</div>
+
+								<div class="row">
+									<div class=" col-sm-4">
+										<div class="form-group">
+											<label class="control-label">
+												p值阈值: </label>
+											<input class="form-control" name="pValue" id="pValue" value="0.05">
+										</div>
+									</div>
+								</div>
+
+
+								<div class="row">
+									<div class="form-group">
+										<div class="actions col-sm-2">
+											<button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="mySearch()">
+												运行</button>
+										</div>
+
+										@*<div class="actions col-sm-2">*@
+										@*<button type="reset" class="btn btn-primary" style="width: 90%;">*@
+										@*重置</button>*@
+										@*</div>*@
+									</div>
+								</div>
+
+
+							</form>
+
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div id="result" style="display: none">
+				<div class="row">
+					<div class="col-md-12 col-sm-12">
+						<div class="portlet green-jungle box">
+							<div class="portlet-title">
+								<div class="caption">
+									KEGG富集结果
+								</div>
+							</div>
+
+							<div class="portlet-body">
+								<label>显示的列:</label>
+								<div id="checkbox" class="checkbox">
+
+								</div>
+
+								<div class="table-responsive">
+
+									<table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
+									data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100, all]" data-search-align="right" data-multiple-search="true"
+									style="table-layout: fixed;
+										word-wrap: break-word"
+									data-show-export="true" data-export-types="['excel','txt']" data-export-data-type="all"
+									>
+										<thead>
+											<tr>
+												<th data-field='term' data-sortable='true' title="Term">Term</th>
+												<th data-field='id' data-sortable='true' title="ID">ID</th>
+												<th data-field='inputNumber' data-sortable='true' title="Input number">
+													Input number</th>
+												<th data-field='backgroundNumber' data-sortable='true' title="Background number">
+													Background number</th>
+												<th data-field='pValue' data-sortable='true' title="P-Value">P-Value</th>
+												<th data-field='cPValue' data-sortable='true' title="Corrected P-Value">
+													Corrected P-Value(BH)</th>
+												<th data-field='input' data-sortable='true' title="Input"
+												data-formatter="proteinIDPipeFmt"
+												>Input</th>
+												<th data-field='hyperlink' data-sortable='true' title="Hyperlink">
+													Hyperlink</th>
+											</tr>
+										</thead>
+									</table>
+
+								</div>
+
+								<form class="registration-form form-horizontal" id="plotForm"
+								accept-charset="UTF-8" method="post" >
+
+									<div class="form-group">
+										<label class="control-label col-sm-1">Term:</label>
+										<div class="col-sm-6" >
+											<select class="form-control term" name="terms" id="term" multiple="multiple"
+											style="width: 100%">
+
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group">
+										<div class="actions col-sm-offset-1 col-sm-1">
+											<button type="button" class="btn btn-default" id="search" onclick="selectAll()" style="width: 80%">
+												全选</button>
+										</div>
+										<div class="actions col-sm-1">
+											<button type="button" class="btn btn-default" id="search" onclick="reverseSelect()" style="width: 80%">
+												反选</button>
+										</div>
+
+										<div class="actions col-sm-1">
+											<button type="button" class="btn btn-default" id="search" onclick="selectTop10()" style="width: 80%">
+												top 10</button>
+										</div>
+										<div class="actions col-sm-1">
+											<button type="button" class="btn btn-default" id="search" onclick="selectTop20()" style="width: 80%">
+												top 20</button>
+										</div>
+									</div>
+
+									<div class="form-group">
+										<div class="actions col-sm-offset-1 col-sm-3">
+											<button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="plotBar()">
+												富集结果柱状图（富集蛋白个数）</button>
+										</div>
+										<div class="actions  col-sm-3">
+											<button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="pie()">
+												富集结果饼图（富集蛋白个数）</button>
+										</div>
+										<div class="actions  col-sm-3">
+											<button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="plotBar1()">
+												富集结果柱状图（富集检验p值）</button>
+										</div>
+									</div>
+
+									<hr style="border-top: 2px solid #eee;">
+
+									<div id="charts" align="center">没有图片结果生成！</div>
+
+								</form>
+
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-md-12 col-sm-12">
+						<div class="portlet green-jungle box">
+							<div class="portlet-title">
+								<div class="caption">
+									引用
+								</div>
+							</div>
+							<div class="portlet-body">
+								<p class="paragraph">
+									分析模块引用了<b>KOBAS</b>（v2.0-20150126）软件
+									（<a href="http://kobas.cbi.pku.edu.cn" target="_blank">http://kobas.cbi.pku.edu.cn</a>
+									）。
+								</p>
+								<p class="paragraph">
+									相关文献如下所示：
+								</p>
+								<p class="paragraph">
+									Xie, C., Mao, X., Huang, J., Ding, Y., Wu, J., Dong, S., Kong, L., Gao, G., Li, C. and Wei, L. (2011) KOBAS 2.0: a web server for annotation and identification of enriched pathways and diseases. Nucleic Acids Res, 39, W316-322.
+								</p>
+
+							</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+	</div>
+
+
+	<script>
+			var myData
+
+			function proteinIDPipeFmt(value, row, index) {
+				var proteins = value.split("|")
+				var proteinStr = $.map(proteins, function (v) {
+					return "<a onclick=\"showExp('" + v + "')\">" + v + "</a>"
+				}).join("&nbsp;|&nbsp;")
+				return proteinStr
+			}
+
+			function selectAll() {
+				$("#term > option").prop("selected", "selected")
+				$("#term").trigger("change");
+				$("#plotForm").bootstrapValidator("revalidateField", "terms")
+			}
+
+			function selectTop20() {
+				$("#term > option").prop("selected", false)
+				$("#term").trigger("change")
+				$("#term > option").slice(0, 20).prop("selected", "selected")
+				$("#term").trigger("change");
+				$("#plotForm").bootstrapValidator("revalidateField", "terms")
+			}
+
+			function selectTop10() {
+				$("#term > option").prop("selected", false)
+				$("#term").trigger("change")
+				$("#term > option").slice(0, 10).prop("selected", "selected")
+				$("#term").trigger("change")
+				$("#plotForm").bootstrapValidator("revalidateField", "terms")
+			}
+
+			function reverseSelect() {
+				$("#term > option").prop("selected", false)
+				$("#term").trigger("change");
+				$("#plotForm").bootstrapValidator("revalidateField", "terms")
+			}
+
+			function plotBar() {
+				var form = $("#plotForm")
+				var fv = form.data("bootstrapValidator")
+				fv.validate()
+				if (fv.isValid()) {
+					var element = "<div id='content'><span id='info'>" + zhRunning + "</span>&nbsp;<img class='runningImage' src='@routes.Assets.at("images/running2.gif")' style='width: 30px;height: 20px;'></div>"
+					var index = layer.alert(element, {
+						skin: 'layui-layer-molv'
+						, closeBtn: 0,
+						title: zhInfo,
+						btn: []
+					});
+					var terms = $("#term").val()
+					var tmpDatas = $.grep(myData, function (v) {
+						return $.inArray(v.term, terms) >= 0
+					})
+					var numbers = $.map(tmpDatas, function (v) {
+						return v.inputNumber
+					})
+					$.ajax({
+						url: "@routes.ProteinController.barPlot()",
+						type: "post",
+						data: {
+							terms: $("#term").val(),
+							datas: numbers
+						},
+						success: function (data) {
+							layer.close(index)
+							if (data.valid == "false") {
+								$("#charts").html("没有图片结果生成！")
+								swal("错误", data.message, "error")
+							} else {
+								$("#charts").html(data.div)
+							}
+						}
+					});
+				}
+			}
+
+			function plotBar1() {
+				var form = $("#plotForm")
+				var fv = form.data("bootstrapValidator")
+				fv.validate()
+				if (fv.isValid()) {
+					var element = "<div id='content'><span id='info'>" + zhRunning + "</span>&nbsp;<img class='runningImage' src='@routes.Assets.at("images/running2.gif")' style='width: 30px;height: 20px;'></div>"
+					var index = layer.alert(element, {
+						skin: 'layui-layer-molv'
+						, closeBtn: 0,
+						title: zhInfo,
+						btn: []
+					});
+					var terms = $("#term").val()
+					var tmpDatas = $.grep(myData, function (v) {
+						return $.inArray(v.term, terms) >= 0
+					})
+					var numbers = $.map(tmpDatas, function (v) {
+						return v.pValue
+					})
+					$.ajax({
+						url: "@routes.ProteinController.pBarPlot()",
+						type: "post",
+						data: {
+							terms: $("#term").val(),
+							datas: numbers
+						},
+						success: function (data) {
+							layer.close(index)
+							if (data.valid == "false") {
+								$("#charts").html("没有图片结果生成！")
+								swal("错误", data.message, "error")
+							} else {
+								$("#charts").html(data.div)
+							}
+
+						}
+					});
+				}
+			}
+
+			function pie() {
+				var form = $("#plotForm")
+				var fv = form.data("bootstrapValidator")
+				fv.validate()
+				if (fv.isValid()) {
+					var element = "<div id='content'><span id='info'>" + zhRunning + "</span>&nbsp;<img class='runningImage' src='@routes.Assets.at("images/running2.gif")' style='width: 30px;height: 20px;'></div>"
+					var index = layer.alert(element, {
+						skin: 'layui-layer-molv'
+						, closeBtn: 0,
+						title: zhInfo,
+						btn: []
+					});
+					var terms = $("#term").val()
+					var tmpDatas = $.grep(myData, function (v) {
+						return $.inArray(v.term, terms) >= 0
+					})
+					var numbers = $.map(tmpDatas, function (v) {
+						return v.inputNumber
+					})
+					$.ajax({
+						url: "@routes.ProteinController.pie()",
+						type: "post",
+						data: {
+							terms: $("#term").val(),
+							datas: numbers
+						},
+						success: function (data) {
+							layer.close(index)
+							if (data.valid == "false") {
+								$("#charts").html("没有图片结果生成！")
+								swal("错误", data.message, "error")
+							} else {
+								$("#charts").html(data.div)
+							}
+						}
+					});
+				}
+			}
+
+
+			$(function () {
+
+				$(".term").select2()
+
+				$('#egGene').click(function () {
+					$.ajax({
+						url: "@routes.ProteinController.getFirst10GeneIdByLf()",
+						type: "get",
+						success: function (data) {
+							$('#geneId').val(data);
+							$("#form").bootstrapValidator("revalidateField", "geneId")
+							return false
+						}
+					})
+				});
+
+				$.ajax({
+					url: "@routes.ProteinController.getGeneIds()",
+					type: "get",
+					success: function (data) {
+						$('#geneId').typeahead({
+							source: data.geneIds,
+							updater: function (item) {
+								return this.$element.val().replace(matcherRegex, '') + item + matcherEnd;
+							},
+							matcher: function (item) {
+								var tquery = extractor(this.query);
+								if (!tquery) return false;
+								return ~item.toLowerCase().indexOf(tquery.toLowerCase())
+							},
+							highlighter: function (item) {
+								var query = extractor(this.query).replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+								return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+									return '<strong>' + match + '</strong>'
+								})
+							}
+						})
+					}
+				})
+
+				var array = ["ID", "Input number", "Background number", "P-Value", "Corrected P-Value(BH)", "Input", "Hyperlink"]
+				var values = ["id", "inputNumber", "backgroundNumber", "pValue", "cPValue", "input", "hyperlink"]
+				var html = ""
+				$.each(array, function (n, value) {
+							html += "<label style='margin-right: 15px'>" +
+									"<input type='checkbox' checked='checked' value='" + values[n] + "' onclick=\"setColumns('" + values[n] + "')\">" + value +
+									"</label>"
+						}
+				);
+				$("#checkbox").append(html)
+				$('#table').bootstrapTable({
+					exportOptions: {
+						csvSeparator: "\t",
+						onCellHtmlData: function (cell, row, col, htmlData) {
+							var value
+							var html = $.parseHTML(htmlData)
+							if ($(html).text() == "link") {
+								value = $(html).attr("href")
+							} else {
+								value = $(html).text()
+							}
+							return value
+						}
+
+					}
+				});
+
+
+				bootstrapValidator()
+
+
+			})
+
+
+			function mySearch() {
+				var form = $("#form")
+				var fv = form.data("bootstrapValidator")
+				fv.validate()
+				if (fv.isValid()) {
+					var element = "<div id='content'><span id='info'>" + zhRunning + "</span>&nbsp;<img class='runningImage' src='@routes.Assets.at("images/running2.gif")' style='width: 30px;height: 20px;'></div>"
+					var index = layer.alert(element, {
+						skin: 'layui-layer-molv'
+						, closeBtn: 0,
+						title: zhInfo,
+						btn: []
+					});
+					$.ajax({
+						url: "@routes.ProteinController.keggEnrich()",
+						type: "post",
+						data: $("#form").serialize(),
+						success: function (data) {
+							layer.close(index)
+							if (data.valid == "false") {
+								swal("错误", data.message, "error")
+								$("#result").hide()
+							} else {
+								$("#plotForm").show()
+								myData = data
+								$("#result").show()
+								$('#table').bootstrapTable("load", data);
+								var terms = $.map(data, function (v) {
+									return v.term
+								})
+								$(".term").select2({
+									data: terms,
+									placeholder: "点击选择",
+									allowClear: true
+								})
+
+							}
+						}
+					});
+				}
+			}
+
+			function bootstrapValidator() {
+				var infinityNumber = Number.MAX_VALUE
+				$('#form').bootstrapValidator({
+					framework: 'bootstrap',
+					icon: {
+						valid: 'glyphicon glyphicon-ok',
+						invalid: 'glyphicon glyphicon-remove',
+						validating: 'glyphicon glyphicon-refresh'
+					},
+					fields: {
+						geneId: {
+							validators: {
+								notEmpty: {
+									message: '蛋白ID不能为空！'
+								},
+							}
+						},
+						cutoff: {
+							validators: {
+								notEmpty: {
+									message: '阈值不能为空!'
+								},
+								integer: {
+									message: "阈值必须是整数!"
+								},
+								between: {
+									min: "1",
+									max: infinityNumber,
+									message: "阈值不能小于1!"
+								}
+							}
+						},
+						pValue: {
+							validators: {
+								notEmpty: {
+									message: 'p值阈值不能为空!'
+								},
+								numeric: {
+									message: "p值阈值必须是数字!"
+								},
+								between: {
+									min: "0",
+									max: infinityNumber,
+									message: "p值阈值不能小于0!"
+								}
+							}
+						},
+
+					}
+				});
+
+				$('#plotForm').bootstrapValidator({
+					framework: 'bootstrap',
+					icon: {
+						valid: 'glyphicon glyphicon-ok',
+						invalid: 'glyphicon glyphicon-remove',
+						validating: 'glyphicon glyphicon-refresh'
+					},
+					fields: {
+						terms: {
+							validators: {
+								callback: {
+									message: '请至少选择一个Term！',
+									callback: function (value, validator, $field) {
+										var options = validator.getFieldElements('terms').val();
+										return (options != null);
+									}
+								}
+							}
+						},
+					}
+				});
+
+			}
+
+			function setColumns(value) {
+				var element = $("input:checkbox[value=" + value + "]")
+				if (element.is(":checked")) {
+					$('#table').bootstrapTable('showColumn', value);
+				} else {
+					$('#table').bootstrapTable('hideColumn', value);
+				}
+			}
+
+	</script>
+
+}

@@ -1,0 +1,141 @@
+.body-content {
+    padding-left:15px;
+    padding-right:15px
+}
+input,select,textarea {
+    max-width:100%
+}
+.carousel-caption p {
+    font-size:20px;
+    line-height:1.4
+}
+.btn-bracketed::before {
+    display:inline-block;
+    content:"[";
+    padding-right:.5em
+}
+.btn-bracketed::after {
+    display:inline-block;
+    content:"]";
+    padding-left:.5em
+}
+.carousel-inner .item img[src$=".svg"] {
+    width:100%
+}
+@media screen and (max-width:767px) {
+    .carousel-caption {
+        display:none
+    }
+}
+a img {
+    text-decoration:none
+}
+a.glyphicon {
+    text-decoration:none
+}
+input {
+    padding:0 2px
+}
+input[type=number] {
+    text-align:right;
+    width:80px
+}
+.panel-heading .accordion-toggle {
+    text-decoration:none
+}
+.panel-heading .accordion-toggle:after {
+    font-family:'Glyphicons Halflings';
+    content:"";
+    float:right;
+    color:inherit;
+}
+.panel-heading .accordion-toggle.collapsed:after {
+    content:""
+}
+.emphasis {
+    font-weight:bold;
+    font-style:italic
+}
+.italic {
+    font-style:italic
+}
+.bold {
+    font-weight:bold
+}
+h1 {
+    font-size:xx-large;
+    color:#000
+}
+h2 {
+    font-size:x-large;
+    color:#4f81bd
+}
+h3 {
+    font-size:large;
+    font-weight:bold;
+}
+h4 {
+    font-size:medium;
+}
+.force-wrap {
+    word-wrap:break-word
+}
+.number {
+    text-align:right
+}
+.seq {
+    font-family:monospace;
+    font-size:large
+}
+table,tr,th,td,img {
+    border:none 0;
+    border-collapse:collapse
+}
+table.result {
+    margin:10px 5px
+}
+.result {
+    border:2px solid #555;
+    padding:0
+}
+.result th {
+    background-color:#369;
+    color:#fff;
+    font-weight:bold;
+    padding:5px;
+    padding-right:20px;
+    margin:0;
+    text-align:left;
+    font-size:medium
+}
+.result tr:nth-child(even) {
+    background-color:#e7e7e7
+}
+.result tr.selected {
+    background-color:#1c5a80;
+    color:#fff;
+    font-weight:bold
+}
+.result td {
+    padding:2px 5px;
+    margin:0;
+    vertical-align:middle
+}
+.result td.footer {
+    text-align:center;
+    font-size:small;
+    font-style:italic;
+    font-weight:normal;
+    color:#999
+}
+span.download {
+    font-family:Arial,Helvetica,sans-serif
+}
+.fields td {
+    padding-right:10px;
+    vertical-align:top;
+    margin:0
+}
+input[type=button] {
+    max-width:100%
+}

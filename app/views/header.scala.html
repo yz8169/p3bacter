@@ -1,0 +1,115 @@
+@()(implicit request: RequestHeader)
+
+<div class="page-header" style="height: 150px">
+	<div class="row">
+		<div class="col-sm-offset-1 col-md-9">
+			<h4 style="color: #F5F5F5;
+				font-size: 36px;
+				margin-bottom: 0;
+				margin-top: 20px;
+				text-shadow: 2px 2px 0 #555">致病性病原微生物数据分析平台
+			</h4>
+		</div>
+		<div class="col-sm-offset-4 col-md-9">
+			<h4 style="color: #F5F5F5;
+				font-size: 28px;
+				margin-bottom: 10px;
+				text-shadow: 2px 2px 0 #555">
+				复旦BSL-3实验室
+			</h4>
+		</div>
+	</div>
+
+</div>
+
+<nav class="navbar navbar-inverse">
+	<div class="navbar-header">
+		<button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+		data-target="#sub" aria-expanded="false">
+			<span class="sr-only">Toggle navigation</span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>h
+			<span class="icon-bar"></span>
+		</button>
+	</div>
+	<div class="collapse navbar-collapse" id="sub">
+		<ul class="nav navbar-nav">
+			<li><a href="@routes.IndexController.toIndex()"><span class="glyphicon glyphicon-home"></span> 首页</a></li>
+
+			<li class="dropdown">
+				<a href="#"><span class="fa fa-eye"></span> 数据浏览&nbsp;<span class="fa fa-caret-down"></span></a>
+				<ul class="dropdown-menu">
+					<li><a href="@routes.BrowseController.bacteriaBrowseBefore()">表格浏览</a></li>
+					<li><a href="@routes.BrowseController.bacteriaBrowseByTaxonomy()">分类学浏览</a></li>
+				</ul>
+			</li>
+
+			<li class="dropdown">
+				<a href="#"> 基因组分析&nbsp;<span class="fa fa-caret-down"></span></a>
+				<ul class="dropdown-menu">
+					<li><a href="@routes.GenomeController.blastGeneBefore()">Blastn against gene</a></li>
+					<li><a href="@routes.GenomeController.blastGenomeBefore()">Blastn against genome</a></li>
+					<li class="divider"></li>
+					<li><a href="@routes.GenomeController.orthoMclBefore()">OrthoMcl(同源基因分析)</a></li>
+					<li><a href="@routes.GenomeController.mummerBefore()">共线性分析(变异检测)</a></li>
+					<li><a href="@routes.GenomeController.phyTreeBefore()">系统发育树(SNP)</a></li>
+					<li class="divider"></li>
+					<li><a href="@routes.GenomeController.crisprBefore()">CRISPR分析</a></li>
+					<li class="divider"></li>
+					<li><a href="@routes.GenomeController.vfdbAnnoBefore()">VFDB注释(毒力因子)</a></li>
+					<li><a href="@routes.GenomeController.ardbAnnoBefore()">ARDB注释(抗性/耐药)</a></li>
+					<li><a href="@routes.GenomeController.cazyAnnoBefore()">Cazy注释(碳水化合物相关酶)</a></li>
+					<li><a href="@routes.GenomeController.phiAnnoBefore()">PHI注释(病原与宿主互作)</a></li>
+					<li><a href="@routes.GenomeController.tcdbAnnoBefore()">TCDB注释(转运蛋白分类)</a></li>
+					<li><a href="@routes.GenomeController.annoBefore()">GO/KEGG功能注释</a></li>
+				</ul>
+			</li>
+
+			<li><a href="@routes.IndexController.proteinListBefore()">
+				蛋白组分析</a></li>
+
+			<li class="dropdown">
+				<a href="#">  其他分析&nbsp;<span class="fa fa-caret-down"></span></a>
+				<ul class="dropdown-menu">
+					<li><a href="@routes.MultiOmicsController.cAnaBefore()">相关性分析</a></li>
+					<li><a href="http://jvenn.toulouse.inra.fr/app/example.html" target="_blank">韦恩图</a></li>
+					<li><a href="@routes.MultiOmicsController.geneWiseBefore()">GeneWise</a></li>
+					<li><a href="@routes.MultiOmicsController.muscleBefore()">Muscle</a></li>
+				</ul>
+			</li>
+
+
+			<li><a href="@routes.AppController.toAbout()"><span class="fa fa-info-circle"></span>
+				关于我们</a></li>
+
+
+			@if(request.session.get("user").isDefined) {
+				<li class="dropdown" style="float: right;position: absolute;right: 25px" align="right">
+					<a href="#"><span class="fa fa-user"></span>
+						@request.session.get("user")&nbsp;<span class="fa fa-caret-down"></span></a>
+					<ul class="dropdown-menu">
+						<li>
+							<a href="@routes.UserController.changePasswordBefore()" id="loginA"> 修改密码</a>
+						</li>
+						<li>
+							<a href="@routes.UserController.logout()" id="loginA"> 退出登录</a>
+						</li>
+					</ul>
+				</li>
+			} else {
+				<li style="margin-left: 340px;">
+					<a href="@routes.UserController.registerBefore()" id="loginA"><span class="fa fa-user"></span> 注册</a>
+				</li>
+				<li>
+					<a href="@routes.AppController.loginBefore()" id="loginA"><span class="fa fa-user"></span> 登录</a>
+				</li>
+			}
+
+		</ul>
+	</div>
+</nav>
+
+<script>
+
+
+</script>

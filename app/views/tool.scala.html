@@ -1,0 +1,226 @@
+@()
+<div id="group_info_modal" class="modal fade">
+	<div class="modal-dialog" style="width: 800px">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" data-dismiss="modal" aria-hidden="true" class="close">
+							&times;</button>
+				<h4 class="modal-title">
+                            参数</h4>
+			</div>
+			<div class="modal-body">
+				<div>
+					<table id="group_info" class="table table-hover table-bordered table-striped" >
+						<thead>
+							<th>参数名称</th>
+							<th>值</th>
+						</thead>
+						<tbody id="rowInfo">
+
+						</tbody>
+
+					</table>
+				</div>
+
+			</div>
+			<div class="modal-footer">
+				<button type="button" data-dismiss="modal" class="btn btn-default">关闭</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<form style="display: none" action="@routes.GenomeController.downloadResultFile()" id="fileForm" method="post">
+	<input name="fileName" id="fileName">
+	<input name="missionId" id="missionId">
+</form>
+
+<style>
+		.genome-pre {
+			white-space: pre-wrap;
+			word-wrap: break-word;
+			border: 0px solid #ccc;
+			background-color: white;
+		}
+</style>
+<script>
+	var showId = 0
+
+	function updateByHand() {
+		setInterval("updateMission()", 3000)
+	}
+
+	function downloadFile(fileName) {
+		$("#fileName").val(fileName)
+		$("#fileForm").submit()
+	}
+
+	function showResultBefore(id, missionName) {
+		$("#missionName").text(missionName)
+		$("#missionId").val(id)
+		showResult(id)
+	}
+
+	function updateMission() {
+		genome.getAllMission(kind)
+	}
+
+	function viewArgs(value) {
+		var rows = value.split(";")
+		var rowHtml = $.map(rows, function (v, i) {
+			var columns = v.split(":")
+			return "<tr>" +
+					"<td>" + columns[0] + "</td>" +
+					"<td>" + columns[1] + "</td>" +
+					"</tr>"
+		}).join("")
+		$("#rowInfo").html(rowHtml)
+		$("#group_info_modal").modal("show")
+	}
+
+	var genome = {
+		getAllMission: function (kind) {
+			$.ajax({
+				url: "@routes.GenomeController.getAllMission()?kind=" + kind,
+				type: "get",
+				dataType: "json",
+				success: function (data) {
+					$("#missionTable").bootstrapTable("load", data)
+				}
+			})
+		},
+
+		testWebSocket: function (wsUri) {
+			var websocket
+
+			function onOpen(evt) {
+				doSend(JSON.stringify({
+					info: "start"
+				}))
+			}
+
+			function doSend(message) {
+				websocket.send(message);
+			}
+
+			function onClose(evt) {
+
+			}
+
+			function onMessage(evt) {
+				var message = evt.data
+				writeToScreen(message);
+
+			}
+
+			function onError(evt) {
+				updateByHand()
+				writeToScreen('ERROR: ' + evt.data);
+			}
+
+			function writeToScreen(message) {
+				var data = $.parseJSON(message)
+				$('#missionTable').bootstrapTable("load", data);
+			}
+
+			var websocket = new WebSocket(wsUri);
+			websocket.onopen = function (evt) {
+				onOpen(evt)
+			};
+			websocket.onclose = function (evt) {
+				onClose(evt)
+			};
+			websocket.onmessage = function (evt) {
+				onMessage(evt)
+			};
+			websocket.onerror = function (evt) {
+				onError(evt)
+			};
+		},
+		argsFmt: function (value, row, index) {
+			var html = "<button class='btn btn-link get_group_info' onclick='viewArgs(\"" + value + "\")' title='查看详细'>" +
+					"<i class='fa fa-search-plus' aria-hidden='true'></i></button>"
+			return html
+		},
+		stateFmt: function (value, row, index) {
+			var stateStr;
+			if (value == "success") {
+				stateStr = "<span class='label label-success'>成功！</span>"
+			} else if (value == "running") {
+				stateStr = "正在运行&nbsp;<img class='runningImage'src='@routes.Assets.at("images/running2.gif")' style='width: 30px; height: 20px;'>"
+			} else {
+				stateStr = "<span class='label label-danger'>错误！</span>"
+			}
+			return stateStr
+		},
+		operateFmt: function (value, row, index) {
+			var deleteStr = "<a title='删除' onclick=\"genome.deleteMission('" + row.id + "')\" style='cursor: pointer;'><span><em class='fa fa-close'></em></span></a>"
+			var downloadStr = "<a title='下载结果' href='@routes.GenomeController.downloadResult()?missionId=" + row.id + "' style='cursor: pointer;'><span><em class='fa fa-download'></em></span></a>"
+			var resultStr = "<a title='查看结果' onclick=\"showResultBefore('" + row.id + "','" + row.missionname + "')\" style='cursor: pointer;'><span><em class='fa fa-eye'></em></span></a>"
+			var viewStr = "<a title='日志' onclick=\"genome.viewLog('" + row.id + "')\" style='cursor: pointer;'><span><em class='fa fa-file-text'></em></span></a>"
+			var rs = []
+			if (row.state == "success") {
+				rs.push(downloadStr)
+				rs.push(resultStr)
+			}
+			if (row.state != "running") {
+				rs.push(viewStr)
+			}
+			rs.push(deleteStr)
+
+			return rs.join(" ")
+		},
+		viewLog: function (id) {
+			$.ajax({
+				url: "@routes.GenomeController.getLogContent()",
+				type: "get",
+				data: {
+					missionId: id
+				},
+				success: function (data) {
+					layer.open({
+						type: 1,
+						title: "<h4>运行信息</h4>",
+						area: ['900px', '600px'],
+						skin: 'layui-layer-demo',
+						closeBtn: 1,
+						anim: 2,
+						shadeClose: true,
+						maxmin: true,
+						content: "<pre style='word-wrap: break-word' class='genome-pre'>" + data + "</pre>"
+					})
+				}
+			});
+		},
+		deleteMission: function (id) {
+			swal({
+						title: "",
+						text: "确认删除？",
+						type: "warning",
+						showCancelButton: true,
+						showConfirmButton: true,
+						confirmButtonClass: "btn-danger",
+						confirmButtonText: "确定",
+						closeOnConfirm: false,
+						cancelButtonText: "取消"
+					},
+					function () {
+						$.ajax({
+							url: "@routes.GenomeController.deleteMissionById()?missionId=" + id + "&kind=" + kind,
+							type: "get",
+							success: function (data) {
+								$('#missionTable').bootstrapTable("load", data);
+								swal("成功！", "删除成功！", "success")
+								if (id == showId) {
+									$("#result").hide()
+								}
+
+							}
+						});
+					});
+		}
+
+
+	}
+
+</script>

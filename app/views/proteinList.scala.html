@@ -1,0 +1,45 @@
+@()(implicit request: RequestHeader)
+@main("蛋白组项目一览") {
+
+
+		<div class="row">
+			<div class="form-group col-sm-12">
+				<h2 class="page-heading"
+				style="text-align: left;
+					border-bottom: 5px solid #e9f3f4">蛋白组项目一览</h2>
+			</div>
+		</div>
+
+		<table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
+		data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100, all]" data-multiple-search="true">
+			<thead>
+				<tr>
+					<th data-field="projectname" data-sortable="true">项目名</th>
+					<th data-field="describe" data-sortable="true">描述</th>
+					<th data-field="operate">操作</th>
+				</tr>
+			</thead>
+		</table>
+
+
+
+	<script>
+
+			$(function () {
+
+				$.ajax({
+					url: "@routes.IndexController.getAllProteinProject()",
+					type: "get",
+					dataType: "json",
+					success: function (data) {
+						$('#table').bootstrapTable({
+							data: data
+						});
+					}
+				})
+
+			})
+	</script>
+
+
+}

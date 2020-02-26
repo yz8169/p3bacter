@@ -1,0 +1,315 @@
+@()
+@admin.main("蛋白组数据管理") {
+
+	<div class="container">
+
+		<div class="row">
+			<div class="form-group col-sm-12">
+				<h2 class="page-heading"
+				style="text-align: left;
+					border-bottom: 5px solid #e9f3f4">蛋白组数据管理</h2>
+			</div>
+		</div>
+
+
+		<div id="toolbar">
+			<button type="button" class="btn btn-primary" id="deleteButton" onclick="addProject()">
+				<i class="fa fa-plus"></i>&nbsp;新增蛋白组项目
+			</button>
+		</div>
+
+		<table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
+		data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100, all]" data-multiple-search="true">
+			<thead>
+				<tr>
+					<th data-field="projectname" data-sortable="true">项目名</th>
+					<th data-field="describe" data-sortable="true">描述</th>
+					<th data-field="uploadtime" data-sortable="true">上传时间</th>
+					<th data-field="operate">操作</th>
+				</tr>
+			</thead>
+		</table>
+
+		<div id="addModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog" style="width: 800px">
+				<div class="modal-content">
+					<div class="modal-header bg-primary">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+						<h4 class="modal-title">
+							<i class="fa fa-plus"></i>
+							<span id="lblAddTitle" style="font-weight: bold">新增蛋白组项目</span>
+						</h4>
+					</div>
+					<form class="form-horizontal" id="form" action="" data-toggle="validator" enctype="multipart/form-data">
+						<div class="modal-body">
+							<div class="row-fluid">
+
+								<div class="form-group">
+									<label class="control-label col-sm-3">项目名:</label>
+									<div class="col-sm-6">
+										<input class="form-control" name="projectName" id="projectName"/>
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label class="control-label col-sm-3">描述:</label>
+									<div class="col-sm-8">
+										<textarea name="describe" id="describe" class="form-control" rows="5"></textarea>
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label class="control-label col-sm-3">数据矩阵文件:</label>
+									<div class="col-sm-8">
+										<input id="input-1" type="file" class="file control-label" name="dataFile" data-show-preview="false"
+										data-show-upload="false">
+										<span class="help-block">
+											<a href="@routes.ToolController.downloadExampleFile()?fileName=quant_matrix.txt"><em>
+												示例文件</em></a></span>
+									</div>
+								</div>
+
+								<div id="protein">
+									<div class="form-group">
+										<label class="control-label col-sm-3">蛋白列表文件:</label>
+										<div class="col-sm-8">
+											<input id="input-1" type="file" class="file control-label" name="listFile" data-show-preview="false"
+											data-show-upload="false">
+											<span class="help-block">
+												<a href="@routes.ToolController.downloadExampleFile()?fileName=protein_list.txt"><em>
+													示例文件</em></a></span>
+										</div>
+									</div>
+
+									<div class="form-group">
+										<label class="control-label col-sm-3">KEGG注释文件:</label>
+										<div class="col-sm-8">
+											<input id="input-1" type="file" class="file control-label" name="keggFile" data-show-preview="false"
+											data-show-upload="false">
+											<span class="help-block">
+												<a href="@routes.ToolController.downloadExampleFile()?fileName=kegg_anno.txt"><em>
+													示例文件</em></a></span>
+										</div>
+									</div>
+
+									<div class="form-group">
+										<label class="control-label col-sm-3">GO注释文件:</label>
+										<div class="col-sm-8">
+											<input id="input-1" type="file" class="file control-label" name="goFile" data-show-preview="false"
+											data-show-upload="false">
+											<span class="help-block">
+												<a href="@routes.ToolController.downloadExampleFile()?fileName=go_anno.txt"><em>
+													示例文件</em></a></span>
+										</div>
+									</div>
+
+									<div style="margin-top: 0px;text-indent: 9.8em;margin-bottom: 10px">
+										<p><b>备注：</b>GO、KEGG注释文件可通过GO/KEGG功能注释获得。</p>
+									</div>
+
+								</div>
+
+							</div>
+						</div>
+
+
+
+						<div class="modal-footer bg-info">
+							<input type="hidden" id="ID" name="ID" />
+							<button type="button" class="btn blue" onclick="newProject()">确定</button>
+							<button type="button" class="btn green" data-dismiss="modal">取消</button>
+						</div>
+
+
+					</form>
+
+
+
+
+				</div>
+			</div>
+		</div>
+
+
+	</div>
+
+	<script>
+			$(function () {
+
+				$.ajax({
+					url: "@routes.ToolController.getAllProteinProject()",
+					type: "get",
+					dataType: "json",
+					success: function (data) {
+						$('#table').bootstrapTable({
+							data: data
+						});
+					}
+				})
+
+				bootstrapValidator()
+
+
+			})
+
+			function newProject() {
+				var form = $("#form")
+				var fv = form.data("bootstrapValidator")
+				fv.validate()
+				if (fv.isValid()) {
+					var element = "<div id='content'><span id='info'>正在上传文件...</span>&nbsp;<img class='runningImage' src='/assets/images/running2.gif' style='width: 30px;height: 20px;'></div>"
+					var index = layer.alert(element, {
+						skin: 'layui-layer-molv'
+						, closeBtn: 0,
+						title: "信息",
+						btn: []
+					});
+					var form1 = new FormData($("#form")[0])
+					$.ajax({
+						url: "@routes.AdminController.addProteinProject()",
+						type: "post",
+						processData: false,
+						contentType: false,
+						data: form1,
+						success: function (data) {
+							layer.close(index)
+							$(".file").fileinput("clear")
+							if (data.valid == "false") {
+								layer.msg(data.message, {
+									icon: 5,
+									time: 0,
+									closeBtn: 1
+								});
+							} else {
+								$("#addModal").modal("hide")
+								fv.resetForm(true)
+								swal("成功！", "新增项目成功！", "success")
+								$('#table').bootstrapTable("load", data);
+							}
+
+						}
+					});
+				}
+			}
+
+			function deleteProject(id) {
+				swal({
+							title: "",
+							text: "确定要删除此项目吗？",
+							type: "warning",
+							showCancelButton: true,
+							showConfirmButton: true,
+							confirmButtonClass: "btn-danger",
+							confirmButtonText: "确定",
+							closeOnConfirm: false,
+							cancelButtonText: "取消"
+						},
+						function () {
+							$.ajax({
+								url: "deleteProteinProjectById?id=" + id,
+								type: "get",
+								success: function (data) {
+									$('#table').bootstrapTable("load", data);
+									swal("成功！", "删除项目成功！", "success")
+								}
+							});
+						});
+			}
+
+
+			function bootstrapValidator() {
+				$('#form').bootstrapValidator({
+					framework: 'bootstrap',
+					icon: {
+						valid: 'glyphicon glyphicon-ok',
+						invalid: 'glyphicon glyphicon-remove',
+						validating: 'glyphicon glyphicon-refresh'
+					},
+					fields: {
+						projectName: {
+							validators: {
+								notEmpty: {
+									message: '项目名不能为空！'
+								},
+								remote: {
+									message: "项目名已存在！",
+									url: "@routes.AdminController.projectNameCheck()",
+									type: "POST",
+									delay: 1000
+								}
+							}
+						},
+						dataFile: {
+							validators: {
+								notEmpty: {
+									message: '请选择一个数据矩阵文件！'
+								},
+								file: {
+									extension: 'txt',
+									message: '请选择一个TXT格式的数据矩阵文件！'
+								}
+							}
+						},
+						listFile: {
+							validators: {
+								notEmpty: {
+									message: '请选择一个蛋白列表文件！'
+								},
+								file: {
+									extension: 'txt',
+									message: '请选择一个TXT格式的蛋白列表文件！'
+								}
+							}
+						},
+						keggFile: {
+							validators: {
+								notEmpty: {
+									message: '请选择一个KEGG注释文件！'
+								},
+								file: {
+									extension: 'txt',
+									message: '请选择一个TXT格式的KEGG注释文件！'
+								}
+							}
+						},
+						goFile: {
+							validators: {
+								notEmpty: {
+									message: '请选择一个GO注释文件！'
+								},
+								file: {
+									extension: 'txt',
+									message: '请选择一个TXT格式的GO注释文件！'
+								}
+							}
+						},
+						describe: {
+							validators: {
+								notEmpty: {
+									message: '描述不能为空！'
+								},
+							}
+						},
+
+
+					}
+				});
+
+			}
+
+			function addProject() {
+				$("#addModal").modal("show")
+			}
+
+			$(".file").fileinput({
+				showPreview: false,
+				browseLabel: "选择...",
+				removeLabel: "删除",
+				language: "zh"
+			});
+
+
+	</script>
+
+
+}

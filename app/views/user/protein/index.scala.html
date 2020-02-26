@@ -1,0 +1,573 @@
+@import models.Tables.ProteindealRow
+@(deal: Option[ProteindealRow])(implicit request: RequestHeader)
+@user.protein.main("数据一览")("view") {
+	<div class="page-content">
+
+		<div class="page-bar">
+			<ul class="page-breadcrumb">
+				<li>
+					<i class="fa fa-table"></i>
+					<a href="#">数据一览</a>
+				</li>
+			</ul>
+		</div>
+
+
+		<div class="row-fluid">
+
+			<div class="row">
+				<div class="col-md-12 col-sm-12">
+					<div class="portlet green-jungle box">
+						<div class="portlet-title">
+							<div class="caption">
+								基本信息
+							</div>
+						</div>
+						<div class="portlet-body">
+							<div class="table-responsive">
+								<table class="table table-hover table-bordered table-striped" style="table-layout: fixed;
+									word-wrap: break-word">
+									<tbody>
+
+										<tr>
+											<th>
+												项目名称
+											</th>
+											<td>
+											@request.session.get("projectName")
+											</td>
+										</tr>
+
+										<tr>
+											<th>
+												样品名称
+											</th>
+											<td id="sampleNames">
+
+											</td>
+										</tr>
+
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-12 col-sm-12">
+					<div class="portlet green-jungle box">
+						<div class="portlet-title">
+							<div class="caption">
+								数据预处理
+							</div>
+						</div>
+
+						<div class="portlet-body">
+
+							<form class="registration-form form-horizontal" id="form"
+							accept-charset="UTF-8" method="post">
+
+								<label>请选择处理方法:</label>
+								<div class="checkbox">
+
+									<label style="margin-right: 15px">
+										<input name="delete" onchange="myDelete(this)" type="checkbox" checked >
+										异常值删除</label>
+									<label style="margin-right: 15px">
+										<input name="replace" onchange="myReplace(this)" type="checkbox" checked>
+										缺失值替换</label>
+									<label style="margin-right: 15px"><input name="normal" onchange="myNormal(this)" type="checkbox" checked>
+										数据归一化</label>
+								</div>
+
+								<div id="delete">
+									<h4>异常值删除</h4>
+									<div class="form-group">
+										<label class="control-label col-sm-2">IQR系数<span id="question1" style="margin-bottom: 5px">
+											<a type="button" title="说明" data-container="body" data-toggle="popover"
+											data-placement="right" data-content="默认非异常值区间范围：[0，Q3+1.5*IQR]。"
+											data-trigger="hover"><i class="fa fa-question-circle-o"></i></a>
+										</span>:</label>
+										<div class="col-sm-3">
+											<input name="iqr" id="iqr" class="form-control" value="1.5"></input>
+										</div>
+									</div>
+								</div>
+
+								<div id="replace">
+									<h4>缺失值替换</h4>
+
+									<div class="form-group">
+										<label class="control-label col-sm-2">方法<span id="question2" style="margin-bottom: 5px">
+											<a type="button" title="KNN算法说明" data-container="body" data-toggle="popover"
+											data-placement="right" data-content="KNN算法使用K个近邻来填充数据集中的缺失值。对于
+											每个具有缺失值的行，将搜索其K个最相似的行数据，并使用这些行数据的值来填充缺失值。"
+											data-trigger="hover"><i class="fa fa-question-circle-o"></i></a>
+										</span>:</label>
+										<div class="col-sm-3">
+											<select class="form-control" onchange="replaceChange(this)" name="replaceMethod">
+												<option selected value="最小正数的倍数">coef * 数据矩阵中的最小正数</option>
+												<option>指定某个值</option>
+												<option>KNN</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group" id="rate">
+										<label class="control-label col-sm-2">coef:</label>
+										<div class="col-sm-3">
+											<input name="rate" class="form-control" value="0.5">
+										</div>
+									</div>
+
+									<div class="form-group" id="assignValue" style="display: none">
+										<label class="control-label col-sm-2">指定的值:</label>
+										<div class="col-sm-3">
+											<input name="assignValue" class="form-control" value="0.001"></input>
+										</div>
+									</div>
+
+									<div class="form-group" id="kValue" style="display: none">
+										<label class="control-label col-sm-2">K值:</label>
+										<div class="col-sm-3">
+											<input name="kValue" class="form-control" value="10"></input>
+										</div>
+									</div>
+
+								</div>
+
+
+								<div id="normal">
+									<h4>数据归一化</h4>
+
+									<div class="form-group">
+										<label class="control-label col-sm-2">归一化方法
+											<span id="question4" style="margin-bottom: 5px">
+												<a type="button" title="说明" data-container="body" data-toggle="popover"
+												data-placement="right" data-content="若同时选中两种归一化方法，则先执行质控样品归一化，再执行峰面积归一化。"
+												data-trigger="hover"><i class="fa fa-question-circle-o"></i></a>
+											</span>:</label>
+										<div class="col-sm-3">
+											<div class="checkbox">
+												<label style='margin-right: 15px;
+													width: 150px;
+													padding-top: 7px;'>
+													<input name="normalMethod[]" id="qcMethod" onchange="myQc(this)" type="checkbox" checked  value="1">
+													质控样品归一化</label>
+												<label style='margin-right: 15px;
+													width: 150px;
+													padding-top: 7px;'>
+													<input name="normalMethod[]" id="paMethod" onchange="myPA(this)" type="checkbox"  value="2">
+													峰面积归一化</label>
+											</div>
+
+										</div>
+									</div>
+
+									<div id="innerNormal" style="display: block;">
+										<div class="form-group">
+											<label class="control-label col-sm-2">质控样品
+												<span id="question5" style="margin-bottom: 5px">
+													<a type="button" title="说明" data-container="body" data-toggle="popover"
+													data-placement="right" data-content="质控样品归一化为行归一化，归一化后，质控样品中的蛋白数值作为参照基线均被设为1.0，
+													其他样品输出该样品与质控样品对应蛋白值相除的结果。"
+													data-trigger="hover"><i class="fa fa-question-circle-o"></i></a>
+												</span>:</label>
+											<div class="col-sm-3">
+												<select class="form-control colName" name="colName" id="colName"
+												style="width: 100%">
+												</select>
+											</div>
+										</div>
+
+									</div>
+
+									<div id="peakAreaNormal" style="display: none;">
+										<div class="form-group">
+											<label class="control-label col-sm-2">峰面积归一化求和值<span id="question3" style="margin-bottom: 5px">
+												<a type="button" title="说明" data-container="body" data-toggle="popover"
+												data-placement="right" data-content="峰面积归一化后，为每个样品对应列的求和值，
+												每个样品的求和值均为此值，且相等。"
+												data-trigger="hover"><i class="fa fa-question-circle-o"></i></a>
+											</span>:</label>
+											<div class="col-sm-3">
+												<input name="coefficient" id="coefficient" class="form-control" value="10000"></input>
+											</div>
+										</div>
+									</div>
+								</div>
+
+
+								<div class="form-group">
+									<div class="actions col-sm-offset-2 col-sm-3">
+										<button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="mySearch()">
+											应用</button>
+									</div>
+								</div>
+
+
+							</form>
+
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-12 col-sm-12">
+					<div class="portlet green-jungle box">
+						<div class="portlet-title">
+							<div class="caption">
+								数据列表（预处理后）<span id="question5" style="margin-bottom: 5px">
+								<a type="button" title="说明" data-container="body" data-toggle="popover"
+								data-placement="right" data-content="后续的分析内容（如差异，热图等）均基于此数据矩阵。如果不进行任何预处理操作，则输出原始数据矩阵结果用于后续的分析。"
+								data-trigger="hover"><i class="fa fa-question-circle-o" style="color: white"></i></a>
+							</span>
+							</div>
+						</div>
+
+						<div class="portlet-body">
+
+							<label>显示的样品:</label>
+							<div id="checkbox" class="checkbox">
+
+
+							</div>
+
+							<div class="table-responsive">
+
+								<table class="display table table-bordered table-hover table-striped" id="table" data-pagination="true" data-search="true"
+								data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100]" data-multiple-search="true"
+								data-show-export="true" data-export-types="['excel','txt']" data-export-data-type="all"
+								>
+									<thead>
+										<th data-field='geneId' data-sortable='true' id="marker"
+										data-formatter="proteinIDFmt">蛋白ID</th>
+									</thead>
+								</table>
+
+
+
+
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+		</div>
+
+	</div>
+
+
+	<script>
+			$(function () {
+
+				$.ajax({
+					url: "@routes.ProteinController.getSampleNames()",
+					type: "get",
+					dataType: "json",
+					success: function (data) {
+						var sampleNameStr = data.sampleNames.join("&nbsp;&nbsp;")
+						$("#sampleNames").html(sampleNameStr)
+						$(".colName").select2(
+								{
+									data: data.sampleNames,
+								}
+						);
+						var checkboxHtml = ""
+						$.each(data.sampleNames, function (i, v) {
+							checkboxHtml += "<label style='margin-right: 15px'>" +
+									"<input type='checkbox' checked='checked' value='" + v + "' onclick=\"setColumns('" + v + "')\">" + v +
+									"</label>"
+						})
+						$("#checkbox").empty().append(checkboxHtml)
+						var html = ""
+						$.each(data.sampleNames, function (i, v) {
+							html += "<th data-field='" + v + "' data-sortable='true'>" + v + "</th>"
+						})
+						$("#marker").after(html)
+						$('#table').bootstrapTable({
+							exportOptions: {
+								csvSeparator: "\t"
+							}
+						});
+					}
+				})
+
+				@if(deal.isEmpty){
+				$("input[name='delete']").attr("checked", false).trigger("change")
+				$("input[name='replace']").attr("checked", false).trigger("change")
+				$("input[name='normal']").attr("checked", false).trigger("change")
+				}else{
+				@if(deal.get.delete.isDefined){
+				$("input[name='delete']").attr("checked", true).trigger("change")
+				$("input[name='iqr']").val(@deal.get.iqr)
+				}else{
+				$("input[name='delete']").attr("checked", false).trigger("change")
+				}
+
+				@if(deal.get.replace.isDefined){
+				$("input[name='replace']").attr("checked", true).trigger("change")
+				$("[name='replaceMethod']").val("@deal.get.replacemethod").trigger("change")
+
+				@if(deal.get.replacemethod=="指定某个值"){
+				$("[name='assignValue']").val(@deal.get.assignvalue)
+				}
+				@if(deal.get.replacemethod == "最小正数的倍数") {
+				$("[name='rate']").val(@deal.get.rate)
+				}
+				@if(deal.get.replacemethod == "KNN") {
+				$("[name='kValue']").val(@deal.get.kvalue)
+				}
+				}else{
+				$("input[name='replace']").attr("checked", false).trigger("change")
+				}
+
+				@if(deal.get.normal.isDefined){
+				$("input[name='normal']").attr("checked", true).trigger("change")
+				$("[name='normalMethod']").val("@deal.get.normalmethod").trigger("change")
+				@if(deal.get.normalmethod.sum==1){
+				$("[name='colName']").val("@deal.get.colname").select2()
+				$("#qcMethod").attr("checked", true).trigger("change")
+				$("#paMethod").attr("checked", false).trigger("change")
+				}
+				@if(deal.get.normalmethod.sum == 3) {
+				$("[name='colName']").val("@deal.get.colname").select2()
+				$("[name='coefficient']").val(@deal.get.coefficient)
+				$("#qcMethod").attr("checked", true).trigger("change")
+				$("#paMethod").attr("checked", true).trigger("change")
+				}
+				@if(deal.get.normalmethod.sum==2){
+				$("[name='coefficient']").val(@deal.get.coefficient)
+				$("#paMethod").attr("checked", true).trigger("change")
+				$("#qcMethod").attr("checked", false).trigger("change")
+				}
+				}else{
+				$("input[name='normal']").attr("checked", false).trigger("change")
+				}
+				}
+
+				$.ajax({
+					url: "@routes.ProteinController.getData()",
+					type: "get",
+					dataType: "json",
+					success: function (data) {
+						$('#table').bootstrapTable("load", data.array)
+					}
+				})
+
+				bootstrapValidator()
+
+
+			})
+
+			function myNormal(element) {
+				if ($(element).is(":checked")) {
+					$('#normal').show()
+				} else {
+					$('#normal').hide()
+				}
+			}
+
+			function myDelete(element) {
+				if ($(element).is(":checked")) {
+					$('#delete').show()
+				} else {
+					$('#delete').hide()
+				}
+			}
+
+			function myReplace(element) {
+				if ($(element).is(":checked")) {
+					$('#replace').show()
+				} else {
+					$('#replace').hide()
+				}
+			}
+
+			function myQc(element) {
+				if ($(element).is(":checked")) {
+					$('#innerNormal').show()
+				} else {
+					$('#innerNormal').hide()
+				}
+			}
+
+			function myPA(element) {
+				if ($(element).is(":checked")) {
+					$('#peakAreaNormal').show()
+				} else {
+					$('#peakAreaNormal').hide()
+				}
+			}
+
+			function replaceChange(element) {
+				var value = $(element).find(">option:selected").val()
+				if (value == "最小正数的倍数") {
+					$("#rate").show()
+					$("#assignValue,#kValue").hide()
+				} else if (value == "指定某个值") {
+					$("#assignValue").show()
+					$("#rate,#kValue").hide()
+				} else {
+					$("#kValue").show()
+					$("#rate,#assignValue").hide()
+				}
+			}
+
+			function mySearch() {
+				var form = $("#form")
+				var fv = form.data("bootstrapValidator")
+				fv.validate()
+				if (fv.isValid()) {
+					var element = "<div id='content'><span id='info'>正在处理数据...</span>&nbsp;<img class='runningImage' src='/assets/images/running2.gif' style='width: 30px;height: 20px;'></div>"
+					var index = layer.alert(element, {
+						skin: 'layui-layer-molv'
+						, closeBtn: 0,
+						title: "信息",
+						btn: []
+					});
+					$.ajax({
+						url: "@routes.ProteinController.dataDeal()",
+						type: "post",
+						data: $("#form").serialize(),
+						success: function (data) {
+							layer.close(index)
+							if (data.valid == "false") {
+								swal("错误", data.message, "error")
+							} else {
+								$('#table').bootstrapTable("load", data.array)
+							}
+
+						}
+					});
+				}
+
+			}
+
+			function setColumns(value) {
+				var element = $("input:checkbox[value=" + value + "]")
+				if (element.is(":checked")) {
+					$('#table').bootstrapTable('showColumn', value);
+				} else {
+					$('#table').bootstrapTable('hideColumn', value);
+				}
+			}
+
+			var infinityNumber = Number.MAX_VALUE
+
+			function bootstrapValidator() {
+				$('#form').bootstrapValidator({
+					framework: 'bootstrap',
+					icon: {
+						valid: 'glyphicon glyphicon-ok',
+						invalid: 'glyphicon glyphicon-remove',
+						validating: 'glyphicon glyphicon-refresh'
+					},
+					fields: {
+						coefficient: {
+							validators: {
+								notEmpty: {
+									message: '峰面积归一化求和值不能为空！'
+								},
+								numeric: {
+									message: '峰面积归一化求和值必须为数字！'
+								},
+								between: {
+									min: "0",
+									max: infinityNumber,
+									inclusive: false,
+									message: "峰面积归一化求和值必须大于0！"
+								}
+
+							}
+						},
+						iqr: {
+							validators: {
+								notEmpty: {
+									message: 'IQR系数不能为空！'
+								},
+								numeric: {
+									message: 'IQR系数必须为数字！'
+								},
+								between: {
+									min: "0",
+									max: infinityNumber,
+									inclusive: false,
+									message: "IQR系数必须大于0！"
+								}
+
+							}
+						},
+						'normalMethod[]': {
+							validators: {
+								choice: {
+									min: 1,
+									message: '至少选择一种归一化方法！'
+								}
+							}
+						},
+						rate: {
+							validators: {
+								notEmpty: {
+									message: 'coef不能为空！'
+								},
+								numeric: {
+									message: 'coef必须为数字！'
+								},
+								between: {
+									min: "0",
+									max: infinityNumber,
+									inclusive: false,
+									message: "coef必须大于0！"
+								}
+
+							}
+						},
+						assignValue: {
+							validators: {
+								notEmpty: {
+									message: '指定的值不能为空！'
+								},
+								numeric: {
+									message: '指定的值必须为数字！'
+								},
+								between: {
+									min: "0",
+									max: infinityNumber,
+									inclusive: false,
+									message: "指定的值必须大于0！"
+								}
+
+							}
+						},
+						kValue: {
+							validators: {
+								notEmpty: {
+									message: 'K值不能为空！'
+								},
+								integer: {
+									message: 'K值必须为整数！'
+								},
+								between: {
+									min: "0",
+									max: infinityNumber,
+									inclusive: false,
+									message: "K值必须大于0！"
+								}
+
+							}
+						},
+					}
+				})
+
+			}
+
+	</script>
+
+
+}

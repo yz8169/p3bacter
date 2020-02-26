@@ -1,0 +1,929 @@
+@()(implicit request: RequestHeader)
+@main("CRISPR分析") {
+	<style>
+			.radio label, .checkbox label {
+				padding-top: 7px;
+			}
+	</style>
+	<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/site.css")">
+
+	<div class="row">
+		<div class="form-group col-sm-12">
+			<h2 class="page-heading"
+			style="text-align: left;
+				border-bottom: 5px solid #e9f3f4">CRISPR分析( 参数和结果说明
+				<a target="_blank" href="@routes.GenomeController.toCrisprHelp()"><span class="fa fa-question-circle"></span></a> )</h2>
+		</div>
+	</div>
+
+	<form class="registration-form form-horizontal" id="form"
+	accept-charset="UTF-8" method="post">
+
+		<div class="form-group">
+			<label class="control-label col-sm-3">任务名:</label>
+			<div class="col-sm-3">
+				<input class="form-control" name="missionName" onfocus="inputSelect(this)">
+			</div>
+
+		</div>
+
+		<div class="form-group">
+			<label class="control-label col-sm-3">Type of query:</label>
+			<div class="col-sm-3">
+				<select class="form-control" onchange="change(this)" name="method">
+					<option selected value="text">Text</option>
+					<option value="file">File</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="form-group" id="queryContent">
+			<label class="control-label col-sm-3">Query text:</label>
+			<div class="col-sm-8">
+				<textarea class="form-control monospace" name="queryText" id="queryText" rows="7"></textarea>
+				<span class="help-block">e.g.,&nbsp;<a href="#"><em id="egQuery">
+					示例</em></a></span>
+			</div>
+		</div>
+
+		<div id="queryFile" style="display: none;">
+			<div class="form-group">
+				<label class="control-label col-sm-3">Query fasta file:</label>
+				<div class="col-sm-8">
+					<input id="input-1" type="file" class="file control-label" name="file" data-show-preview="false"
+					data-show-upload="false">
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<div class="actions col-sm-offset-3 col-sm-3">
+				<button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="showMoreArgs(this)">
+					展开更多参数</button>
+			</div>
+		</div>
+
+		<div id="args" style="display: none">
+			<div class="form-group">
+				<label class="control-label col-sm-3">Minimal Repeat Length:</label>
+				<div class="col-sm-3">
+					<input class="form-control" name="minDR" value="23">
+				</div>
+				<label class="control-label col-sm-3">Maximal Repeat Length:</label>
+				<div class="col-sm-3">
+					<input class="form-control" name="maxDR" value="55">
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label col-sm-3">Allow Repeat Mismatch:</label>
+				<div class="col-sm-3">
+					<div class="checkbox">
+						<label style="margin-right: 15px;">
+							<input name="arm" type="checkbox" value="kegg" checked>
+								&nbsp;</label>
+					</div>
+				</div>
+				<label class="control-label col-sm-3">Minimal Spacers size in function of Repeat size:</label>
+				<div class="col-sm-3">
+					<input class="form-control" name="percSPmin" value="0.6">
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label col-sm-3">Maximal Spacers size in function of Repeat size:</label>
+				<div class="col-sm-3">
+					<input class="form-control" name="percSPmax" value="2.5">
+				</div>
+				<label class="control-label col-sm-3">Maximal allowed percentage of similarity between Spacers:</label>
+				<div class="col-sm-3">
+					<input class="form-control" name="spSim" value="60">
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label class="control-label col-sm-3">Percentage mismatchs allowed between Repeats:</label>
+				<div class="col-sm-3">
+					<input class="form-control" name="mismDRs" value="20">
+				</div>
+				<label class="control-label col-sm-3">Percentage mismatchs allowed for truncated Repeat:</label>
+				<div class="col-sm-3">
+					<input class="form-control" name="truncDR" value="33">
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label class="control-label col-sm-3">
+					Size of Flanking regions in base pairs (bp) for each analyzed CRISPR array:</label>
+				<div class="col-sm-3">
+					<input class="form-control" name="flank" value="100">
+				</div>
+				<label class="control-label col-sm-3">Alternative detection of truncated repeat:</label>
+				<div class="col-sm-3">
+					<div class="checkbox">
+						<label style="margin-right: 15px;padding-top: 7px">
+							<input name="dt" type="checkbox" value="kegg">
+								&nbsp;</label>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label class="control-label col-sm-3">
+					Perform CAS gene detection:</label>
+				<div class="col-sm-3">
+					<div class="checkbox">
+						<label style="margin-right: 15px;">
+							<input name="cas" type="checkbox" value="kegg" onchange="myDetection(this)">
+								&nbsp;</label>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-group" id="detection" style="display: none">
+				<label class="control-label col-sm-3">
+					Clustering model:</label>
+				<div class="col-sm-3">
+					<select class="form-control" name="defValue">
+						<option value="G">General (permissive)</option>
+						<option value="T">Typing</option>
+						<option selected="selected" value="S">SubTyping</option>
+					</select>
+				</div>
+				<label class="control-label col-sm-3">
+					Unordered:</label>
+				<div class="col-sm-3">
+					<div class="checkbox">
+						<label style="margin-right: 15px;">
+							<input name="meta" type="checkbox" checked value="kegg">
+								&nbsp;</label>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<div class="actions col-sm-offset-3 col-sm-2">
+				<button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="mySearch()">
+					运行</button>
+			</div>
+
+			<div class="actions  col-sm-2">
+				<button type="reset" class="btn btn-primary" style="width: 90%;">
+					重置</button>
+			</div>
+		</div>
+
+	</form>
+
+	<hr>
+	<h4>分析结果:</h4>
+
+	<div class="table-responsive">
+
+		<table class="display table table-bordered" id="missionTable" data-pagination="true" data-search="true"
+		data-toolbar="#toolbar" data-page-list="[5, 10, all]" data-page-size="5" data-multiple-search="true">
+			<thead>
+				<tr>
+					<th data-field="missionname" data-sortable="true">任务名</th>
+					<th data-field="args" data-sortable="true" data-formatter="genome.argsFmt">参数</th>
+					<th data-field="state" data-sortable="true"
+					data-formatter="genome.stateFmt"
+					>状态</th>
+					<th data-field="starttime" data-sortable="true">开始时间</th>
+					<th data-field="endtime" data-sortable="true">结束时间</th>
+					<th data-field="operate" data-formatter="genome.operateFmt">操作</th>
+				</tr>
+			</thead>
+		</table>
+	</div>
+
+	<div id="result" style="display: none">
+		<hr>
+		<h4 style="color: black" id="missionResult">CRISPR分析结果展示(<span id="missionName"></span>):</h4>
+
+		<div class="panel panel-primary">
+			<div class="panel-heading">
+				<h3 class="panel-title">
+					Viewing Result
+				</h3>
+			</div>
+			<div class="panel-body" id="accordion">
+				<div class="row">
+					<div class="col-md-9">
+						<table class="">
+							<tbody><tr>
+								<td class="number bold">4</td>
+								<td style="padding-left: 10px">analysed sequence(s)</td>
+							</tr>
+								<tr>
+									<td class="number bold">4</td>
+									<td style="padding-left: 10px">sequence(s) with CRISPR</td>
+								</tr>
+							</tbody></table>
+					</div>
+					<div class="col-md-3" style="white-space: nowrap">
+						<input id="hideEL1" onclick="hideEL1(this.checked)" type="checkbox"> <label>
+						Hide CRISPR with evidence level = 1</label>
+					</div>
+				</div>
+				<br id="jsonShow">
+				<div class="panel panel-success" id="demo">
+					<div class="panel-heading">
+						<h3 class="panel-title">
+							<a data-parent="#accordion" class="accordion-toggle" data-toggle="collapse" id="h3a" href="#0">
+								Sequence Acidilobus_saccharovorans_CR1  [1540 bp ] [ 1 CRISPR ]
+							</a>
+						</h3>
+					</div>
+					<div id="0" class="panel-body panel-collapse collapse">
+						<div>
+							<ul class="nav nav-pills">
+								<li class="active"><a data-toggle="tab" href="#summary-0" id="summary">Summary</a></li>
+								<li><a data-toggle="tab" href="#details-0" id="details">Details</a></li>
+							</ul>
+							<hr style="margin: 2px;
+								padding: 0px">
+							<div class="tab-content">
+								<div id="summary-0" class="tab-pane fade in active" style="overflow: auto; ">
+									<table class="result">
+										<thead>
+											<tr>
+												<th>Element</th>
+												<th style="white-space: nowrap">CRISPR Id /<br>Cas Type</th>
+												<th>Start</th>
+												<th>End</th>
+												<th style="width: 10px;
+													white-space: nowrap">Spacer /<br>Gene</th>
+												<th>Repeat consensus /<br>cas genes</th>
+												<th>Direction<br>&nbsp;</th>
+												<th style="width: 10px">Evidence Level</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr class="EL_4" id="tr">
+												<td>CRISPR</td>
+												<td><a href="#" onclick="return openPanel('0', '0')">
+													Acidilobus_saccharovorans_CR1_1</a></td>
+												<td>281</td>
+												<td>1330</td>
+												<td style="text-align: center">16</td>
+												<td class="seq">GTTTCAACACCATTCCTTGGTTTC</td>
+												<td style="text-align: center">-</td>
+												<td style="text-align: center">4</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<div id="details-0" class="tab-pane fade">
+									<div style="margin: 10px 0px">
+										<ul class="nav nav-pills">
+											<li>
+												<a data-toggle="tab" href="#details-0-0" aria-expanded="true">
+													NC_015572_1</a>
+											</li>
+										</ul>
+
+
+										<div class="tab-content">
+											<div id="details-0-0" class="panel panel-default tab-pane fade in EL_4">
+												<div class="panel-heading"><h4>
+													Acidilobus_saccharovorans_CR1_1</h4></div>
+												<div class="panel-body">
+													<div class="row">
+														<label class="col-md-3">Start</label>
+														<span class="col-md-6">281</span>
+													</div>
+													<div class="row">
+														<label class="col-md-3">End</label>
+														<span class="col-md-6">1330</span>
+													</div>
+													<div class="row">
+														<label class="col-md-3">DR Consensus</label>
+														<span class="col-md-6">GTTTCAACACCATTCCTTGGTTTC</span>
+													</div>
+													<div class="row">
+														<label class="col-md-3">DR Length</label>
+														<span class="col-md-6">24</span>
+													</div>
+													<div class="row">
+														<label class="col-md-3">Spacers Count</label>
+														<span class="col-md-6">16</span>
+													</div>
+													<div class="row">
+														<label class="col-md-3">Direction</label>
+														<span class="col-md-6">-</span>
+													</div>
+													<div class="row">
+														<label class="col-md-3">Potential Orientation (AT%)</label>
+														<span class="col-md-6">ND</span>
+													</div>
+													<div class="row">
+														<label class="col-md-3">Evidence Level</label>
+														<span class="col-md-6">4</span>
+													</div>
+													<div class="row">
+														<label class="col-md-3">Conservation DR</label>
+														<span class="col-md-6">98.66 %</span>
+													</div>
+													<div class="row">
+														<label class="col-md-3">Conservation Spacer</label>
+														<span class="col-md-6">0.00 %</span>
+													</div>
+													<div class="row">
+														<label class="col-md-3">Regions</label>
+													</div>
+													<div class="row" style="">
+														<div class="col-md-12" style="overflow: auto; ">
+															<table class="fields">
+																<tbody><tr>
+																	<td style="color: maroon">181</td>
+																	<td colspan="2" class="seq">
+																		GTCGCCCTGGGAGTAGAGCCTCCTGCCGCTGCCGTCCGCGAGGGACCTGAAGGTCACCGCCTCCCTGTGGGCCAGGTAAAGCTCCCAGAGGGGGTGAAGG</td>
+																</tr>
+																	<tr id="trDemo">
+																		<td style="color: maroon">281</td>
+																		<td class="seq"><span style="background-color: yellow">
+																			GTTTCAACACCATTCCTTGGTTTC</span></td>
+																		<td class="seq"><span style="background-color: rgba(27, 34, 156, 0.5)">
+																			CCATTGGTAAATGAGATTGTGGTTACGCATCCAGAGCATAA</span></td>
+																	</tr>
+																	<tr>
+																		<td style="color: maroon">1307</td>
+																		<td class="seq"><span style="background-color: yellow">
+																			GTTTCAACACCATTCCTTGGTTTC</span></td>
+																	</tr>
+																	<tr>
+																		<td style="color: maroon">1331</td>
+																		<td colspan="2" class="seq">
+																			CGAGCCCTGAGCTGTTATGCTTGTCCCTGTCCTCCGCGCGGCCTGGGGCCTGCCCTTCCCCCGCTCCTCTGTCCCACTGTTGTCCTCTGCTGGGAAATAC</td>
+																	</tr>
+																</tbody></table>
+														</div>
+													</div>
+													<div class="row">
+														<div class="col-md-6">
+															<input value="Download spacers (fasta)" onclick="exportSpacers('Acidilobus_saccharovorans_CR1', 'Acidilobus_saccharovorans_CR1_1', true, false)" type="button">
+															<input value="Download crispr (fasta)" onclick="exportCrispr('Acidilobus_saccharovorans_CR1', 'Acidilobus_saccharovorans_CR1_1', true, false)" type="button">
+															<input value="Download spacers reverse complement (fasta)" onclick="exportSpacers('Acidilobus_saccharovorans_CR1', 'Acidilobus_saccharovorans_CR1_1', true, true)" type="button">
+															<input value="Download crispr reverse complement (fasta)" onclick="exportCrispr('Acidilobus_saccharovorans_CR1', 'Acidilobus_saccharovorans_CR1_1', true, true)" type="button">
+														</div>
+														<div class="col-md-6">
+															<input value="Display spacers (fasta)" onclick="exportSpacers('Acidilobus_saccharovorans_CR1', 'Acidilobus_saccharovorans_CR1_1', false, false)" type="button">
+															<input value="Display crispr (fasta)" onclick="exportCrispr('Acidilobus_saccharovorans_CR1', 'Acidilobus_saccharovorans_CR1_1', false, false)" type="button">
+															<input value="Display spacers reverse complement (fasta)" onclick="exportSpacers('Acidilobus_saccharovorans_CR1', 'Acidilobus_saccharovorans_CR1_1', false, true)" type="button">
+															<input value="Display crispr reverse complement (fasta)" onclick="exportCrispr('Acidilobus_saccharovorans_CR1', 'Acidilobus_saccharovorans_CR1_1', false, true)" type="button">
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<script>
+			var result = {}
+			var orignalDemo = ""
+			var kind = "crispr"
+
+			function showMoreArgs(element) {
+				if($(element).text().trim()=="展开更多参数"){
+					$(element).text("折叠更多参数")
+					$("#args").show()
+				}else{
+					$(element).text("展开更多参数")
+					$("#args").hide()
+				}
+			}
+
+			function myDetection(element) {
+				if ($(element).is(":checked")) {
+					$('#detection').show()
+				} else {
+					$('#detection').hide()
+				}
+			}
+
+			function exportSpacers(sid, cid, download, reverse) {
+				var file = "Sequence_" + sid + "-crispr_" + cid + "-spacers.fa";
+				var crispr = getCrispr(sid, cid);
+				if (crispr == null) {
+					return;
+				}
+				var text = '';
+				var index = 1;
+				$.each(crispr.Regions, function (i, region) {
+					if (region.Type == 'Spacer') {
+						text += ">spacer" + index + line_sep;
+						text += reverse ? reverseString(SeqComplement(region.Sequence)) : region.Sequence;
+						text += line_sep;
+						index++;
+					}
+				});
+
+				if (download) {
+					dowload(file, text);
+				}
+				else {
+					display(text);
+				}
+			}
+
+			function hideEL1(checked) {
+				//summary
+				$('tr.EL_1').each(function (index) {
+					this.style.display = checked ? 'none' : 'table-row';
+				});
+				//details
+				$('li.EL_1').each(function (index) {
+					this.style.display = checked ? 'none' : 'inline';
+				});
+				$('div.EL_1').each(function (index) {
+					this.style.visibility = checked ? 'hidden' : 'visible';
+				});
+			}
+
+			function decimal(num, v) {
+				var vv = Math.pow(10, v);
+				return Math.round(num * vv) / vv;
+			}
+
+			function randomColor() {
+				var r = Math.floor(Math.random() * 256);
+				var g = Math.floor(Math.random() * 256);
+				var b = Math.floor(Math.random() * 256);
+				return "rgb(" + r + ',' + g + ',' + b + ",0.5)";
+			}
+
+			function showResult(id, missionName) {
+				$("#missionName").text(missionName)
+				showId = id
+				var index = layer.load(1, {
+					shade: [0.1, '#fff']
+				});
+				$.ajax({
+					url: "@routes.GenomeController.crisprResult()?missionId=" + id,
+					type: "get",
+					dataType: "json",
+					success: function (data) {
+						layer.close(index)
+						result = data
+						refreshHtml()
+						$("#result").show()
+						var target_top = $("#missionResult").offset().top
+						$("html,body").animate({scrollTop: target_top}, 800)
+					}
+				})
+			}
+
+			function refreshHtml() {
+				var html = ""
+				var showSeq = $.grep(result.Sequences, function (v, i) {
+					return v.Crisprs.length > 0
+				})
+				$.each(showSeq, function (i, v) {
+					var demo = orignalDemo.clone()
+					$(demo).find("#h3a").attr("href", "#" + i)
+					$(demo).find("#h3a").html("Sequence " + v.Id + "  [" + v.Length + " bp ] [ " + v.Crisprs.length + " CRISPR ]")
+					$(demo).find("#summary").attr("href", "#summary-" + i)
+					$(demo).find("#summary-0").attr("id", "summary-" + i)
+					$(demo).find("#details").attr("href", "#details-" + i)
+					$(demo).find("#0.panel-body").attr("id", i)
+					var trHtml = ""
+					var liHtml = ""
+					var detailsHtml = ""
+					$.each(v.Crisprs, function (ci, cv) {
+						var tr = $(demo).find("#tr").clone()
+						$(tr).attr("class", "EL_" + cv.Evidence_Level)
+						$(tr).find("td:eq(1)>a").html(cv.Name)
+						$(tr).find("td:eq(1)>a").attr("onclick", "return openPanel('" + i + "'," + ci + ")")
+						$(tr).find("td:eq(2)").html(cv.Start)
+						$(tr).find("td:eq(3)").html(cv.End)
+						$(tr).find("td:eq(4)").html(cv.Spacers)
+						$(tr).find("td:eq(5)").html(cv.DR_Consensus)
+						$(tr).find("td:eq(6)").html(cv.CRISPRDirection)
+						$(tr).find("td:eq(7)").html(cv.Evidence_Level)
+						trHtml += $(tr).prop("outerHTML")
+						var li = $(demo).find("#details-0 ul.nav li").clone()
+						$(li).addClass("EL_" + cv.Evidence_Level)
+						$(li).find("a").html(cv.Name)
+						$(li).find("a").attr("href", "#details-" + i + "-" + ci)
+						liHtml += $(li).prop("outerHTML")
+						var details = $(demo).find("#details-0-0").clone()
+						$(details).removeClass("EL_4").addClass("EL_" + cv.Evidence_Level)
+						$(details).find("div>h4").html(cv.Name)
+						$(details).find("div.panel-body div:eq(0) span").html(cv.Start)
+						$(details).find("div.panel-body div:eq(1) span").html(cv.End)
+						$(details).find("div.panel-body div:eq(2) span").html(cv.DR_Consensus)
+						$(details).find("div.panel-body div:eq(3) span").html(cv.DR_Length)
+						$(details).find("div.panel-body div:eq(4) span").html(cv.Spacers)
+						$(details).find("div.panel-body div:eq(5) span").html(cv.CRISPRDirection)
+						$(details).find("div.panel-body div:eq(6) span").html(cv.Potential_Orientation)
+						$(details).find("div.panel-body div:eq(7) span").html(cv.Evidence_Level)
+						var dr = (cv.Conservation_DRs)
+						dr = decimal(dr, 2)
+						$(details).find("div.panel-body div:eq(8) span").html(dr + "%")
+						$(details).find("div.panel-body div:eq(9) span").html(decimal(cv.Conservation_Spacers, 2) + "%")
+						$(details).find("table.fields tbody tr:eq(0) td:eq(0)").html(cv.Regions[0].Start)
+						$(details).find("table.fields tbody tr:eq(0) td:eq(1)").html(cv.Regions[0].Sequence)
+						var dr = $.grep(cv.Regions, function (rv, ri) {
+							return rv.Type == "DR"
+						})
+						var spacer = $.grep(cv.Regions, function (rv, ri) {
+							return rv.Type == "Spacer"
+						})
+						var trDemoHtml
+						$.each(spacer, function (ri, rv) {
+							var trDemo = $(demo).find("#trDemo").clone()
+							$(trDemo).find("td:eq(0)").html(dr[ri].Start)
+							$(trDemo).find("td:eq(1) span").html(dr[ri].Sequence)
+							$(trDemo).find("td:eq(2) span").html(rv.Sequence).css("background-color", randomColor())
+							$(trDemo).attr("id", "")
+							trDemoHtml += $(trDemo).prop("outerHTML")
+						})
+						var lastRegion = cv.Regions[cv.Regions.length - 1]
+						$(details).find("table.fields tbody tr:eq(0) td:eq(1)").after(trDemoHtml)
+						$(details).find("table.fields tbody tr:eq(-2) td:eq(0)").html(dr[dr.length - 1].Start)
+						$(details).find("table.fields tbody tr:eq(-2) td:eq(1) span").html(dr[dr.length - 1].Sequence)
+						$(details).find("table.fields tbody tr:last td:eq(0)").html(lastRegion.Start)
+						$(details).find("table.fields tbody tr:last td:eq(1)").html(lastRegion.Sequence)
+						$(details).find("#trDemo").remove()
+						$(details).find("input:eq(-8)").attr("onclick", "exportSpacers('" + v.Id + "','" + cv.Name + "',true,false)")
+						$(details).find("input:eq(-7)").attr("onclick", "exportCrispr('" + v.Id + "','" + cv.Name + "',true,false)")
+						$(details).find("input:eq(-6)").attr("onclick", "exportSpacers('" + v.Id + "','" + cv.Name + "',true,true)")
+						$(details).find("input:eq(-5)").attr("onclick", "exportCrispr('" + v.Id + "','" + cv.Name + "',true,true)")
+						$(details).find("input:eq(-4)").attr("onclick", "exportSpacers('" + v.Id + "','" + cv.Name + "',false,false)")
+						$(details).find("input:eq(-3)").attr("onclick", "exportCrispr('" + v.Id + "','" + cv.Name + "',false,false)")
+						$(details).find("input:eq(-2)").attr("onclick", "exportSpacers('" + v.Id + "','" + cv.Name + "',false,true)")
+						$(details).find("input:eq(-1)").attr("onclick", "exportCrispr('" + v.Id + "','" + cv.Name + "',false,true)")
+						$(details).attr("id", "details-" + i + "-" + ci)
+						detailsHtml += $(details).prop("outerHTML")
+					})
+					$(demo).find("#details-0 div.tab-content").html(detailsHtml)
+					$(demo).find("#details-0 ul.nav").html(liHtml)
+					if (v.Crisprs.length == 1) {
+						$(demo).find("#details-0 ul.nav").hide()
+					}
+					$(demo).find("table.result tbody").html(trHtml)
+					$(demo).find("#details-0-0").attr("id", "details-" + i + "-0")
+					$(demo).removeAttr("id")
+					$(demo).find("#details-0").attr("id", "details-" + i)
+					var demoHtml = $(demo).prop("outerHTML")
+					html += demoHtml
+				})
+				$("td.number.bold").html(showSeq.length)
+				$("#jsonShow").nextAll().remove()
+				$("#jsonShow").after(html)
+				$.each($("div.tab-content"), function (i, v) {
+					$(this).find("div.panel:first").addClass("active")
+				})
+				$.each($("div.tab-pane ul.nav.nav-pills"), function (i, v) {
+					$(this).find("li:first").addClass("active")
+				})
+			}
+
+			$(function () {
+				$('#missionTable').bootstrapTable({});
+				genome.getAllMission(kind)
+				var wsUri = "@routes.GenomeController.updateMissionSocket("crispr").webSocketURL()"
+				genome.testWebSocket(wsUri);
+				orignalDemo = $("#demo")
+				$("#demo").remove()
+				bootstrapValidator()
+				refreshMissionName()
+
+			})
+
+			var line_sep = '\r\n';
+
+			function getCrispr(sid, cid) {
+				var object = null;
+				$.each(result.Sequences, function (i, sequence) {
+					if (sequence.Id == sid) {
+						$.each(sequence.Crisprs, function (i, crispr) {
+							if (crispr.Name == cid) {
+								object = crispr;
+								return;
+							}
+						});
+					}
+				});
+				return object;
+			}
+
+			function dowload(file, text) {
+				var element = document.createElement('a');
+				element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+				element.setAttribute('download', file);
+				element.style.display = 'none';
+				document.body.appendChild(element);
+				element.click();
+				document.body.removeChild(element);
+			}
+
+			function exportCrispr(sid, cid, download, reverse) {
+				var file = "Sequence_" + sid + "-crispr_" + cid + ".fa";
+				var crispr = getCrispr(sid, cid);
+				if (crispr == null) {
+					return;
+				}
+				var text = ">Sequence_" + sid + "-crispr_" + cid + line_sep;
+				var sequence = '';
+				$.each(crispr.Regions, function (i, region) {
+					sequence += region.Sequence;
+				});
+
+				// if reverse complement is selected, reverse sequence
+				if (reverse) {
+					sequence = reverseString(SeqComplement(sequence))
+				}
+
+				//format sequence (80 bases par ligne)
+				var re = new RegExp('.{1,' + 80 + '}', 'g');
+				var split = sequence.match(re);
+				for (var i = 0; i < split.length; i++) {
+					text += split[i] + line_sep;
+				}
+
+				if (download) {
+					dowload(file, text);
+				}
+				else {
+					display(text);
+				}
+			}
+
+			function reverseString(str) {
+				return str.split("").reverse().join("");
+			}
+
+			function SeqComplement(seq) {
+				// returns the reverse complement of the sequence
+				var COMPLEMENT_BASES = {'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G'};
+				var complementSeq = '';
+
+				for (i = 0; i < seq.length; i++) {
+					complementSeq += COMPLEMENT_BASES[seq[i]];
+				}
+
+				return complementSeq;
+			}
+
+			function display(text) {
+				text = "<pre>" + text + "</pre>";
+				var win = window.open("", "_blank");
+				win.document.write(text);
+			}
+
+			function change(element) {
+				var value = $(element).find(">option:selected").val()
+				if (value == "text") {
+					$("#queryContent").show()
+					$("#queryFile").hide()
+				} else {
+					$("#queryContent").hide()
+					$("#queryFile").show()
+				}
+			}
+
+			$('#egQuery').click(function () {
+				var eg = ">CAI80459\n" +
+						"TTGCGGGGCCCCAACATAGACGATTTCGAAAAGAAATTCTACAAACAAGGCGAGTTGGGG\n" +
+						"GGGCGGGGCCCCAACACAGAGAATTTCAAAAAGAAATTCTACAAACAATGCAAGTTGGGG\n" +
+						"TTGGCCGACGAAATAAATTTTGCGAAAATATCATTTCTGTTCCACTCCCAAGAACCATTA\n" +
+						"CATAATAAATCAATAGTGATTCTTTATTATTTCAGTCGCACTCCCTCAAGTTAA"
+				$('#queryText').val(eg);
+				$("#form").bootstrapValidator("revalidateField", "queryText")
+			});
+
+			function mySearch() {
+				var form = $("#form")
+				var fv = form.data("bootstrapValidator")
+				fv.validate()
+				if (fv.isValid()) {
+					var form1 = new FormData($("#form")[0]);
+					if (fileExist()) {
+						zhRunning = "正在上传文件"
+					}
+					var element = "<div id='content'><span id='info'>" + zhRunning + "</span><span id='progress'></span>&nbsp;<img class='runningImage' src='@routes.Assets.at("images/running2.gif")' style='width: 30px;height: 20px;'></div>"
+					var index = layer.alert(element, {
+						skin: 'layui-layer-molv'
+						, closeBtn: 0,
+						title: zhInfo,
+						btn: []
+					});
+					$.ajax({
+						xhr: function () {
+							var myXhr = $.ajaxSettings.xhr();
+							if (myXhr.upload) {
+								myXhr.upload.addEventListener('progress', progressHandlingFunction, false);
+							}
+							return myXhr
+						},
+						url: "@routes.GenomeController.crispr()",
+						type: "post",
+						processData: false,
+						contentType: false,
+						data: form1,
+						success: function (data) {
+							layer.close(index)
+							refreshMissionName()
+							$("#missionTable").bootstrapTable("load", data)
+
+						}
+					});
+				}
+			}
+
+			function openPanel(seqId, elId) {
+				$('.nav-pills a[href="#details-' + seqId + '"]').tab('show');
+				$('.nav-pills a[href="#details-' + seqId + '-' + elId + '"]').tab('show');
+				return false;
+			}
+
+			function bootstrapValidator() {
+				var infinityNumber = Number.MAX_VALUE
+				$('#form').bootstrapValidator({
+					framework: 'bootstrap',
+					icon: {
+						valid: 'glyphicon glyphicon-ok',
+						invalid: 'glyphicon glyphicon-remove',
+						validating: 'glyphicon glyphicon-refresh'
+					},
+					fields: {
+						queryText: {
+							validators: {
+								notEmpty: {
+									message: 'Query text不能为空！'
+								}
+							}
+						},
+						file: {
+							validators: {
+								notEmpty: {
+									message: 'Query fasta file不能为空！'
+								},
+								file: {
+									extension: 'fa,fasta',
+									message: 'Query fasta file必须为fasta文件！'
+								}
+							}
+						},
+						minDR: {
+							validators: {
+								notEmpty: {
+									message: 'Minimal Repeat Length不能为空！'
+								},
+								integer: {
+									message: 'Minimal Repeat Length必须是整数！'
+								},
+								between: {
+									min: "1",
+									max: 70,
+									message: "Minimal Repeat Length必须处于1到70之间！"
+								}
+							}
+						},
+						maxDR: {
+							validators: {
+								notEmpty: {
+									message: 'Maximal Repeat Length不能为空！'
+								},
+								integer: {
+									message: 'Maximal Repeat Length必须是整数！'
+								},
+								between: {
+									min: "2",
+									max: 80,
+									message: "Maximal Repeat Length必须处于2到80之间！"
+								}
+							}
+						},
+						percSPmin: {
+							validators: {
+								notEmpty: {
+									message: 'Minimal Spacers size不能为空！'
+								},
+								numeric: {
+									message: 'Minimal Spacers size必须是实数！'
+								},
+								between: {
+									min: "0.1",
+									max: 60,
+									message: "Minimal Spacers size必须处于0.1到60之间！"
+								}
+							}
+						},
+						percSPmax: {
+							validators: {
+								notEmpty: {
+									message: ' Maximal Spacers size不能为空！'
+								},
+								numeric: {
+									message: ' Maximal Spacers size必须是实数！'
+								},
+								between: {
+									min: "1.5",
+									max: 60,
+									message: " Maximal Spacers size必须处于1.5到60之间！"
+								}
+							}
+						},
+						spSim: {
+							validators: {
+								notEmpty: {
+									message: 'The field不能为空！'
+								},
+								integer: {
+									message: 'The field必须是整数！'
+								},
+								between: {
+									min: "1",
+									max: 100,
+									message: "The field必须处于1到100之间！"
+								}
+							}
+						},
+						mismDRs: {
+							validators: {
+								notEmpty: {
+									message: 'The field不能为空！'
+								},
+								integer: {
+									message: 'The field必须是整数！'
+								},
+								between: {
+									min: "1",
+									max: 100,
+									message: "The field必须处于1到100之间！"
+								}
+							}
+						},
+						truncDR: {
+							validators: {
+								notEmpty: {
+									message: 'The field不能为空！'
+								},
+								numeric: {
+									message: 'The field必须是实数！'
+								},
+								between: {
+									min: "1",
+									max: 100,
+									message: "The field必须处于1到100之间！"
+								}
+							}
+						},
+						flank: {
+							validators: {
+								notEmpty: {
+									message: 'The field不能为空！'
+								},
+								integer: {
+									message: 'The field必须是整数！'
+								},
+								between: {
+									min: "10",
+									max: 1000,
+									message: "The field必须处于10到1000之间！"
+								}
+							}
+						},
+						missionName: {
+							validators: {
+								notEmpty: {
+									message: '任务名不能为空！'
+								},
+								remote: {
+									message: "任务名已存在！",
+									url: "@routes.GenomeController.missionNameCheck()",
+									data: function (validator, $field, value) {
+										return {
+											missionName: $("input[name='missionName']").val(),
+											kind:kind
+										};
+									},
+									type: "POST",
+									delay: 1000
+								},
+							}
+						},
+
+					}
+				});
+			}
+
+			$("#input-1").fileinput({
+				showPreview: false,
+			});
+
+	</script>
+
+
+}

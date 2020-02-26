@@ -1,0 +1,147 @@
+@()
+<div class="panel panel-success">
+	<div class="panel-heading">
+		<h3 class="panel-title">
+			<a data-parent="#accordion" class="accordion-toggle " data-toggle="collapse" href="#0">
+				Sequence Acidilobus_saccharovorans_CR1  [1540 bp ] [ 1 CRISPR ]
+			</a>
+		</h3>
+	</div>
+	<div id="0" class="panel-body panel-collapse collapse in">
+		<div>
+			<ul class="nav nav-pills">
+				<li class="active"><a data-toggle="tab" href="#summary-0">Summary</a></li>
+				<li><a data-toggle="tab" href="#details-0">Details</a></li>
+			</ul>
+			<hr style="margin: 2px;
+				padding: 0px">
+			<div class="tab-content">
+				<div id="summary-0" class="tab-pane fade in active" style="overflow: auto; ">
+					<table class="result">
+						<thead>
+							<tr>
+								<th>Element</th>
+								<th style="white-space: nowrap">CRISPR Id /<br>Cas Type</th>
+								<th>Start</th>
+								<th>End</th>
+								<th style="width: 10px;
+									white-space: nowrap">Spacer /<br>Gene</th>
+								<th>Repeat consensus /<br>cas genes</th>
+								<th>Direction<br>&nbsp;</th>
+								<th style="width: 10px">Evidence Level</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr class="EL_4">
+								<td>CRISPR</td>
+								<td><a href="#" onclick="return openPanel('0', '0')">
+									Acidilobus_saccharovorans_CR1_1</a></td>
+								<td>281</td>
+								<td>1330</td>
+								<td style="text-align: center">16</td>
+								<td class="seq">GTTTCAACACCATTCCTTGGTTTC</td>
+								<td style="text-align: center">-</td>
+								<td style="text-align: center">4</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div id="details-0" class="tab-pane fade">
+					<div style="margin: 10px 0px">
+						<ul class="nav nav-pills">
+							<li class="active EL_4">
+								<a data-toggle="tab" href="#details-0-0" aria-expanded="true">NC_015572_1</a>
+							</li>
+						</ul>
+						<div class="tab-content">
+							<div id="details-0-0" class="panel panel-default tab-pane fade in active EL_4">
+								<div class="panel-heading"><h4>Acidilobus_saccharovorans_CR1_1</h4></div>
+								<div class="panel-body">
+									<div class="row">
+										<label class="col-md-3">Start</label>
+										<span class="col-md-6">281</span>
+									</div>
+									<div class="row">
+										<label class="col-md-3">End</label>
+										<span class="col-md-6">1330</span>
+									</div>
+									<div class="row">
+										<label class="col-md-3">DR Consensus</label>
+										<span class="col-md-6">GTTTCAACACCATTCCTTGGTTTC</span>
+									</div>
+									<div class="row">
+										<label class="col-md-3">DR Length</label>
+										<span class="col-md-6">24</span>
+									</div>
+									<div class="row">
+										<label class="col-md-3">Spacers Count</label>
+										<span class="col-md-6">16</span>
+									</div>
+									<div class="row">
+										<label class="col-md-3">Direction</label>
+										<span class="col-md-6">-</span>
+									</div>
+									<div class="row">
+										<label class="col-md-3">Potential Orientation (AT%)</label>
+										<span class="col-md-6">ND</span>
+									</div>
+									<div class="row">
+										<label class="col-md-3">Evidence Level</label>
+										<span class="col-md-6">4</span>
+									</div>
+									<div class="row">
+										<label class="col-md-3">Conservation DR</label>
+										<span class="col-md-6">98.66 %</span>
+									</div>
+									<div class="row">
+										<label class="col-md-3">Conservation Spacer</label>
+										<span class="col-md-6">0.00 %</span>
+									</div>
+									<div class="row">
+										<label class="col-md-3">Regions</label>
+									</div>
+									<div class="row" style="">
+										<div class="col-md-12" style="overflow: auto; ">
+											<table class="fields">
+												<tbody><tr>
+													<td style="color: maroon">181</td>
+													<td colspan="2" class="seq">
+														GTCGCCCTGGGAGTAGAGCCTCCTGCCGCTGCCGTCCGCGAGGGACCTGAAGGTCACCGCCTCCCTGTGGGCCAGGTAAAGCTCCCAGAGGGGGTGAAGG</td>
+												</tr>
+
+													<tr>
+														<td style="color: maroon">1307</td>
+														<td class="seq"><span style="background-color: yellow">
+															GTTTCAACACCATTCCTTGGTTTC</span></td>
+													</tr>
+													<tr>
+														<td style="color: maroon">1331</td>
+														<td colspan="2" class="seq">
+															CGAGCCCTGAGCTGTTATGCTTGTCCCTGTCCTCCGCGCGGCCTGGGGCCTGCCCTTCCCCCGCTCCTCTGTCCCACTGTTGTCCTCTGCTGGGAAATAC</td>
+													</tr>
+												</tbody></table>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-6">
+											<input value="Download spacers (fasta)" onclick="exportSpacers('Acidilobus_saccharovorans_CR1', 'Acidilobus_saccharovorans_CR1_1', true, false)" type="button">
+											<input value="Download crispr (fasta)" onclick="exportCrispr('Acidilobus_saccharovorans_CR1', 'Acidilobus_saccharovorans_CR1_1', true, false)" type="button">
+											<input value="Download spacers reverse complement (fasta)" onclick="exportSpacers('Acidilobus_saccharovorans_CR1', 'Acidilobus_saccharovorans_CR1_1', true, true)" type="button">
+											<input value="Download crispr reverse complement (fasta)" onclick="exportCrispr('Acidilobus_saccharovorans_CR1', 'Acidilobus_saccharovorans_CR1_1', true, true)" type="button">
+										</div>
+										<div class="col-md-6">
+											<input value="Display spacers (fasta)" onclick="exportSpacers('Acidilobus_saccharovorans_CR1', 'Acidilobus_saccharovorans_CR1_1', false, false)" type="button">
+											<input value="Display crispr (fasta)" onclick="exportCrispr('Acidilobus_saccharovorans_CR1', 'Acidilobus_saccharovorans_CR1_1', false, false)" type="button">
+											<input value="Display spacers reverse complement (fasta)" onclick="exportSpacers('Acidilobus_saccharovorans_CR1', 'Acidilobus_saccharovorans_CR1_1', false, true)" type="button">
+											<input value="Display crispr reverse complement (fasta)" onclick="exportCrispr('Acidilobus_saccharovorans_CR1', 'Acidilobus_saccharovorans_CR1_1', false, true)" type="button">
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

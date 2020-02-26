@@ -1,0 +1,131 @@
+@()(implicit request: RequestHeader)
+@admin.main("新增病毒样品数据") {
+	<style>
+			.form-control {
+				display: block;
+				width: 100%;
+				height: 34px;
+				padding: 6px 12px;
+				font-size: 14px;
+				line-height: 1.42857143;
+				color: #555;
+				background: #fff none;
+				border: 1px solid #ccc;
+				border-radius: 4px;
+				-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+				box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+				-webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+				-o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+				transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+			}
+
+	</style>
+	<div class="container">
+		<form class="registration-form" id="form"
+		accept-charset="UTF-8" method="post" style="margin: 20px;" enctype="multipart/form-data">
+
+			<div class="row">
+				<div class="form-group col-sm-12">
+					<h2 class="page-heading"
+					style="text-align: left;
+						border-bottom: 5px solid #e9f3f4">新增病毒样品数据</h2>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="form-group col-sm-12">
+					<label>选择样品数据文件（*.gbff）:</label>
+					<input id="input-1" type="file" class="file" name="file" data-show-preview="false"
+					data-show-upload="false" accept=".gbff">
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="form-group col-sm-12">
+					<div class="actions">
+						<input type="button" id="submit" value="更新数据库"
+						class="btn btn-primary btn-lg" onclick="myRun()" style="width: 100%">
+					</div>
+				</div>
+
+			</div>
+
+		</form>
+		<div style="margin: 20px">
+			<p>注1：样品数据文件，为<b>GenBank</b>文件。</p>
+			<p>注2：上传样品数据，会完全覆盖数据库中已有样品的数据。</p>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+			$(function () {
+				bootstrapValidator()
+			})
+
+			function myRun() {
+				var form = $("#form")
+				var fv = form.data("bootstrapValidator")
+				fv.validate()
+				if (fv.isValid()) {
+					var element = "<div id='content'><span id='info'>" + zhRunning + "</span>&nbsp;<img class='runningImage' src='/assets/images/running2.gif' style='width: 30px;height: 20px;'></div>"
+					var index = layer.alert(element, {
+						skin: 'layui-layer-molv'
+						, closeBtn: 0,
+						title: zhInfo,
+						btn: []
+					});
+					var form1 = new FormData($("#form")[0])
+					$.ajax({
+						url: "@routes.AdminController.addVirusSample()",
+						type: "post",
+						processData: false,
+						contentType: false,
+						data: form1,
+						success: function (data) {
+							layer.close(index)
+							if (data.valid == "false") {
+								swal("错误", data.message, "error")
+							} else {
+								swal("成功！", "样品数据更新成功！", "success")
+							}
+						}
+					});
+				}
+			}
+
+			$("#input-1").fileinput({
+				showPreview: false,
+				browseLabel: "选择...",
+				removeLabel: "删除文件",
+				language: "zh"
+			});
+
+			function bootstrapValidator() {
+				$('#form').bootstrapValidator({
+					framework: 'bootstrap',
+					icon: {
+						valid: 'glyphicon glyphicon-ok',
+						invalid: 'glyphicon glyphicon-remove',
+						validating: 'glyphicon glyphicon-refresh'
+					},
+					fields: {
+						file: {
+							validators: {
+								notEmpty: {
+									message: '请选择一个数据文件！'
+								},
+								file: {
+									extension: 'gbff',
+									message: '请选择一个gbff格式的数据文件！'
+								}
+							}
+						},
+
+
+					}
+				});
+
+			}
+
+	</script>
+}

@@ -1,0 +1,168 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET         /                                                     controllers.IndexController.toIndex
+
+GET         /p3bacter/app/loginBefore                             controllers.AppController.loginBefore
+POST        /p3bacter/app/login                                   controllers.AppController.login
+GET         /p3bacter/app/toAbout                                 controllers.AppController.toAbout
+
+GET         /p3bacter/admin/sampleManageBefore                    controllers.AdminController.sampleManageBefore
+GET         /p3bacter/admin/logout                                controllers.AdminController.logout
+GET         /p3bacter/admin/changePasswordBefore                  controllers.AdminController.changePasswordBefore
+POST        /p3bacter/admin/changePassword                        controllers.AdminController.changePassword
+GET         /p3bacter/admin/addSampleDataBefore                   controllers.AdminController.addSampleDataBefore
+POST        /p3bacter/admin/addSampleData                         controllers.AdminController.addSampleData
+GET         /p3bacter/admin/getAllSample                          controllers.AdminController.getAllSample
+GET         /p3bacter/admin/deleteSampleBySampleName              controllers.AdminController.deleteSampleBySampleName(sampleName)
+GET         /p3bacter/admin/proteinManageBefore                   controllers.AdminController.proteinManageBefore
+POST        /p3bacter/admin/addProteinProject                     controllers.AdminController.addProteinProject
+POST        /p3bacter/admin/projectNameCheck                      controllers.AdminController.projectNameCheck
+GET         /p3bacter/admin/deleteProteinProjectById              controllers.AdminController.deleteProteinProjectById(id:Int)
+GET         /p3bacter/admin/addVirusSampleBefore                  controllers.AdminController.addVirusSampleBefore
+POST        /p3bacter/admin/addVirusSample                        controllers.AdminController.addVirusSample
+GET         /p3bacter/admin/toHome                                controllers.AdminController.toHome
+
+GET         /p3bacter/user/proteinListBefore                      controllers.IndexController.proteinListBefore
+GET         /p3bacter/user/getAllProteinProject                   controllers.IndexController.getAllProteinProject
+
+GET         /p3bacter/user/changePasswordBefore                   controllers.UserController.changePasswordBefore
+POST        /p3bacter/user/changePassword                         controllers.UserController.changePassword
+GET         /p3bacter/user/logout                                 controllers.UserController.logout
+GET         /p3bacter/user/registerBefore                         controllers.UserController.registerBefore
+POST        /p3bacter/user/register                               controllers.UserController.register
+GET         /p3bacter/user/accountCheck                           controllers.UserController.accountCheck
+
+GET         /p3bacter/test/test                                   controllers.TestController.cors
+
+GET         /p3bacter/user/protein/toIndex                        controllers.ProteinController.toIndex(projectName)
+GET         /p3bacter/user/protein/getSampleNames                 controllers.ProteinController.getSampleNames
+GET         /p3bacter/user/protein/getData                        controllers.ProteinController.getData
+POST        /p3bacter/user/protein/dataDeal                       controllers.ProteinController.dataDeal
+GET         /p3bacter/user/protein/getAllGroup                    controllers.ProteinController.getAllGroup
+GET         /p3bacter/user/protein/deleteGroupById                controllers.ProteinController.deleteGroupById
+GET         /p3bacter/user/protein/selectGroupById                controllers.ProteinController.selectGroupById
+POST        /p3bacter/user/protein/addGroup                       controllers.ProteinController.addGroup
+POST        /p3bacter/user/protein/updateRelation                 controllers.ProteinController.updateRelation
+GET         /p3bacter/user/protein/groupBefore                    controllers.ProteinController.groupBefore
+GET         /p3bacter/user/protein/getAllGroupNum2Names           controllers.ProteinController.getAllGroupNum2Names
+GET         /p3bacter/user/protein/checkRelation                  controllers.ProteinController.checkRelation
+POST        /p3bacter/user/protein/differenceAna                  controllers.ProteinController.differenceAna
+GET         /p3bacter/user/protein/differenceAnaBefore            controllers.ProteinController.differenceAnaBefore
+POST        /p3bacter/user/protein/goBarPlot                      controllers.ProteinController.goBarPlot
+POST        /p3bacter/user/protein/goPBarPlot                     controllers.ProteinController.goPBarPlot
+POST        /p3bacter/user/protein/pie                            controllers.ProteinController.pie
+GET         /p3bacter/user/protein/getFirst10GeneIdByLf           controllers.ProteinController.getFirst10GeneIdByLf
+GET         /p3bacter/user/protein/getGeneIds                     controllers.ProteinController.getGeneIds
+POST        /p3bacter/user/protein/goEnrich                       controllers.ProteinController.goEnrich
+GET         /p3bacter/user/protein/goEnrichBefore                 controllers.ProteinController.goEnrichBefore
+POST        /p3bacter/user/protein/plotExp                        controllers.ProteinController.plotExp
+POST        /p3bacter/user/protein/barPlot                        controllers.ProteinController.barPlot
+POST        /p3bacter/user/protein/pBarPlot                       controllers.ProteinController.pBarPlot
+POST        /p3bacter/user/protein/keggEnrich                     controllers.ProteinController.keggEnrich
+GET         /p3bacter/user/protein/keggEnrichBefore               controllers.ProteinController.keggEnrichBefore
+POST        /p3bacter/user/protein/keggEnrichBefore1              controllers.ProteinController.keggEnrichBefore1
+POST        /p3bacter/user/protein/goEnrichBefore1                controllers.ProteinController.goEnrichBefore1
+POST        /p3bacter/user/protein/plotDiffExp                    controllers.ProteinController.plotDiffExp
+POST        /p3bacter/user/protein/heatmap                        controllers.ProteinController.heatmap
+GET         /p3bacter/user/protein/heatmapBefore                  controllers.ProteinController.heatmapBefore
+GET         /p3bacter/user/protein/getAllGroupNames               controllers.ProteinController.getAllGroupNames
+POST        /p3bacter/user/protein/pca                            controllers.ProteinController.pca
+GET         /p3bacter/user/protein/pcaBefore                      controllers.ProteinController.pcaBefore
+POST        /p3bacter/user/protein/hCluster                       controllers.ProteinController.hCluster
+GET         /p3bacter/user/protein/hClusterBefore                 controllers.ProteinController.hClusterBefore
+GET         /p3bacter/user/protein/rocBefore                      controllers.ProteinController.rocBefore
+GET         /p3bacter/user/protein/getGroupNames                  controllers.ProteinController.getGroupNames
+POST        /p3bacter/user/protein/roc                            controllers.ProteinController.roc
+GET         /p3bacter/user/protein/expressPatternBefore           controllers.ProteinController.expressPatternBefore
+POST        /p3bacter/user/protein/heatmapBefore1                 controllers.ProteinController.heatmapBefore1
+POST        /p3bacter/user/protein/rocBefore1                     controllers.ProteinController.rocBefore1
+POST        /p3bacter/user/protein/expressPattern                 controllers.ProteinController.expressPattern
+POST        /p3bacter/user/protein/expressPatternBefore1          controllers.ProteinController.expressPatternBefore1
+GET         /p3bacter/user/protein/redirectIndex                  controllers.ProteinController.redirectIndex(projectName)
+
+
+GET         /p3bacter/user/browse/bacteriaBrowseBefore            controllers.BrowseController.bacteriaBrowseBefore
+GET         /p3bacter/user/browse/getAllSample                    controllers.BrowseController.getAllSample
+GET         /p3bacter/user/browse/getGeneInfoBefore               controllers.BrowseController.getGeneInfoBefore
+GET         /p3bacter/user/browse/getAllGeneInfo                  controllers.BrowseController.getAllGeneInfo
+GET         /p3bacter/user/browse/downloadDataFile                controllers.BrowseController.downloadDataFile
+GET         /p3bacter/user/browse/bacteriaBrowseByTaxonomy        controllers.BrowseController.bacteriaBrowseByTaxonomy
+GET         /p3bacter/user/browse/getPhylumInfo                   controllers.BrowseController.getPhylumInfo
+POST        /p3bacter/user/browse/getOutlineInfo                  controllers.BrowseController.getOutlineInfo
+POST        /p3bacter/user/browse/getOrderInfo                    controllers.BrowseController.getOrderInfo
+POST        /p3bacter/user/browse/getFamilyInfo                   controllers.BrowseController.getFamilyInfo
+POST        /p3bacter/user/browse/getGenusInfo                    controllers.BrowseController.getGenusInfo
+POST        /p3bacter/user/browse/getSpeciesInfo                  controllers.BrowseController.getSpeciesInfo
+POST        /p3bacter/user/browse/getIdInfo                       controllers.BrowseController.getIdInfo
+GET         /p3bacter/user/browse/getGeneDetailInfo               controllers.BrowseController.getGeneDetailInfo
+
+GET         /p3bacter/user/genome/blastGeneBefore                 controllers.GenomeController.blastGeneBefore
+POST        /p3bacter/user/genome/blastGene                       controllers.GenomeController.blastGene
+GET         /p3bacter/user/genome/blastGenomeBefore               controllers.GenomeController.blastGenomeBefore
+POST        /p3bacter/user/genome/blastGenome                     controllers.GenomeController.blastGenome
+GET         /p3bacter/user/genome/cazyAnnoBefore                  controllers.GenomeController.cazyAnnoBefore
+POST        /p3bacter/user/genome/cazyAnno                        controllers.GenomeController.cazyAnno
+GET         /p3bacter/user/genome/vfdbAnnoBefore                  controllers.GenomeController.vfdbAnnoBefore
+POST        /p3bacter/user/genome/vfdbAnno                        controllers.GenomeController.vfdbAnno
+GET         /p3bacter/user/genome/phiAnnoBefore                   controllers.GenomeController.phiAnnoBefore
+POST        /p3bacter/user/genome/phiAnno                         controllers.GenomeController.phiAnno
+GET         /p3bacter/user/genome/tcdbAnnoBefore                  controllers.GenomeController.tcdbAnnoBefore
+POST        /p3bacter/user/genome/tcdbAnno                        controllers.GenomeController.tcdbAnno
+GET         /p3bacter/user/genome/ardbAnnoBefore                  controllers.GenomeController.ardbAnnoBefore
+POST        /p3bacter/user/genome/ardbAnno                        controllers.GenomeController.ardbAnno
+GET         /p3bacter/user/genome/orthoMclBefore                  controllers.GenomeController.orthoMclBefore
+POST        /p3bacter/user/genome/orthoMcl                        controllers.GenomeController.orthoMcl
+GET         /p3bacter/user/genome/mummerBefore                    controllers.GenomeController.mummerBefore
+POST        /p3bacter/user/genome/mummer                          controllers.GenomeController.mummer
+GET         /p3bacter/user/genome/getAllMission                   controllers.GenomeController.getAllMission
+GET         /p3bacter/user/genome/deleteMissionById               controllers.GenomeController.deleteMissionById
+GET         /p3bacter/user/genome/updateMissionSocket             controllers.GenomeController.updateMissionSocket(kind)
+GET         /p3bacter/user/genome/orthoMclResult                  controllers.GenomeController.orthoMclResult
+GET         /p3bacter/user/genome/downloadResult                  controllers.GenomeController.downloadResult
+GET         /p3bacter/user/genome/getLogContent                   controllers.GenomeController.getLogContent
+GET         /p3bacter/user/genome/mummerResult                    controllers.GenomeController.mummerResult
+GET         /p3bacter/user/genome/ardbResult                      controllers.GenomeController.ardbResult
+GET         /p3bacter/user/genome/cazyResult                      controllers.GenomeController.cazyResult
+GET         /p3bacter/user/genome/vfdbResult                      controllers.GenomeController.vfdbResult
+GET         /p3bacter/user/genome/phiResult                       controllers.GenomeController.phiResult
+GET         /p3bacter/user/genome/tcdbResult                      controllers.GenomeController.tcdbResult
+GET         /p3bacter/user/genome/crisprBefore                    controllers.GenomeController.crisprBefore
+POST        /p3bacter/user/genome/crispr                          controllers.GenomeController.crispr
+GET         /p3bacter/user/genome/crisprResult                    controllers.GenomeController.crisprResult
+GET         /p3bacter/user/genome/phyTreeBefore                   controllers.GenomeController.phyTreeBefore
+POST        /p3bacter/user/genome/phyTree                         controllers.GenomeController.phyTree
+GET         /p3bacter/user/genome/phyTreeResult                   controllers.GenomeController.phyTreeResult
+POST        /p3bacter/user/genome/downloadTree                    controllers.GenomeController.downloadTree
+GET         /p3bacter/user/genome/annoBefore                      controllers.GenomeController.annoBefore
+POST        /p3bacter/user/genome/anno                            controllers.GenomeController.anno
+GET         /p3bacter/user/genome/annoResult                      controllers.GenomeController.annoResult
+POST        /p3bacter/user/genome/downloadResultFile              controllers.GenomeController.downloadResultFile
+GET         /p3bacter/user/genome/getImage                        controllers.GenomeController.getImage
+GET         /p3bacter/user/genome/toMummerHelp                    controllers.GenomeController.toMummerHelp
+GET         /p3bacter/user/genome/getFileContent                  controllers.GenomeController.getFileContent
+GET         /p3bacter/user/genome/toCrisprHelp                    controllers.GenomeController.toCrisprHelp
+GET         /p3bacter/user/genome/getExampleContent               controllers.GenomeController.getExampleContent
+POST        /p3bacter/user/genome/missionNameCheck                controllers.GenomeController.missionNameCheck
+
+GET         /p3bacter/user/multiOmics/cAnaBefore                  controllers.MultiOmicsController.cAnaBefore
+POST        /p3bacter/user/multiOmics/cAna                        controllers.MultiOmicsController.cAna
+GET         /p3bacter/user/multiOmics/geneWiseBefore              controllers.MultiOmicsController.geneWiseBefore
+POST        /p3bacter/user/multiOmics/geneWise                    controllers.MultiOmicsController.geneWise
+GET         /p3bacter/user/multiOmics/muscleBefore                controllers.MultiOmicsController.muscleBefore
+POST        /p3bacter/user/multiOmics/muscle                      controllers.MultiOmicsController.muscle
+POST        /p3bacter/user/multiOmics/downloadTree                controllers.MultiOmicsController.downloadTree
+GET         /p3bacter/user/multiOmics/muscleResult                controllers.MultiOmicsController.muscleResult
+
+
+
+GET         /p3bacter/tool/getAllProteinProject                   controllers.ToolController.getAllProteinProject
+GET         /p3bacter/tool/getExampleFile                         controllers.ToolController.getExampleFile
+GET         /p3bacter/tool/downloadExampleFile                    controllers.ToolController.downloadExampleFile
+GET         /p3bacter/tool/iframe                                 controllers.ToolController.iframe
+
+
+# Map static resources from the /public folder to the /assets URL path
+GET         /assets/*file                                         controllers.Assets.at(path="/public", file)

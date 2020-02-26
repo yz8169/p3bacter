@@ -1,0 +1,562 @@
+@(geneIds: Option[String])(implicit request: RequestHeader)
+@user.protein.main("表达模式分析")("expressPattern") {
+	<div class="page-content">
+
+		<div class="page-bar">
+			<ul class="page-breadcrumb">
+				<li>
+					<i class="fa fa-area-chart"></i>
+					<a href="#">表达模式分析</a>
+				</li>
+			</ul>
+		</div>
+
+
+		<div class="row-fluid">
+
+			<div class="row">
+				<div class="col-md-12 col-sm-12">
+					<div class="portlet green-jungle box">
+						<div class="portlet-title">
+							<div class="caption">
+								设置参数
+							</div>
+						</div>
+
+						<div class="portlet-body">
+
+							<form class="registration-form form-horizontal" id="form"
+							accept-charset="UTF-8" method="post">
+
+								<div id="hand">
+									<div class="form-group">
+										<label class="control-label col-sm-2">备选样品:</label>
+										<div class="col-sm-3" >
+											<select name="from[]" id="multiselect" class="form-control" size="8" multiple="multiple">
+											</select>
+										</div>
+
+										<div class="col-sm-1">
+											<button type="button" title="全选" id="multiselect_rightAll" class="btn btn-default btn-block"><i class="glyphicon glyphicon-forward"></i></button>
+											<button type="button" id="multiselect_rightSelected" class="btn btn-block btn-default"><i class="glyphicon glyphicon-chevron-right"></i></button>
+											<button type="button" id="multiselect_leftSelected" class="btn btn-block btn-default"><i class="glyphicon glyphicon-chevron-left"></i></button>
+											<button type="button" title="全不选" id="multiselect_leftAll" class="btn btn-block btn-default"><i class="glyphicon glyphicon-backward"></i></button>
+										</div>
+										<label class="control-label col-sm-1">已选样品:</label>
+										<div class="col-sm-3">
+											<select name="sampleNameSelect" id="multiselect_to" class="form-control" size="8" multiple="multiple"></select>
+											<input type="hidden" name="sampleNameStr" id="sampleNameStr">
+										</div>
+										<div class="col-sm-1">
+											<button type="button" title="向上移动" id="multiselect_move_up" class="btn btn-block btn-default"><i class="glyphicon glyphicon-arrow-up"></i></button>
+											<button type="button" title="向下移动" id="multiselect_move_down" class="btn btn-block btn-default"><i class="glyphicon glyphicon-arrow-down"></i></button>
+										</div>
+									</div>
+
+									<div class="form-group">
+										<div class="actions col-sm-offset-2 col-sm-5">
+											<p>！！注意：样品的时序是按照“已选样品”从上到下的顺序进行分析，请根据实验设计进行排序！</p>
+										</div>
+									</div>
+
+								</div>
+
+								<div class="form-group">
+									<label class="control-label col-sm-2">蛋白ID:</label>
+									<div class="col-sm-6">
+										@if(geneIds.isDefined) {
+											<textarea name="geneIdStr" id="geneIdStr" class="form-control" rows="10">@geneIds.get</textarea>
+										} else {
+											<textarea name="geneIdStr" id="geneIdStr" class="form-control" rows="10"></textarea>
+										}
+										<span class="help-block">e.g.,&nbsp;<a href="#"><em id="egGene">
+											示例</em></a></span>
+									</div>
+								</div>
+
+								<div class="form-group" id="paired">
+									<label class="control-label col-sm-2">
+										数据变换方法<span id="question5" style="margin-bottom: 5px">
+										<a type="button" title="说明" data-container="body" data-toggle="popover"
+										data-placement="right" data-content="预处理后的数据经过变换后，进行子表达模式的计算和绘制。"
+										data-trigger="hover"><i class="fa fa-question-circle-o" ></i></a>
+									</span>:</label>
+									<div class="col-sm-4">
+										<select class="form-control" name="method" required="required" style="border-radius: 4px;">
+											<option value="none">None</option>
+											<option value="log2" selected="selected">log2_transform:
+												log2(value+1)</option>
+											<option value="log2_center">log2_transform_row_median_center:
+												scale(log2(value+1))</option>
+											<option value="center">row_median_center: scale(value)</option>
+										</select>
+									</div>
+								</div>
+
+								<div class="form-group" id="paired">
+									<label class="control-label col-sm-2">算法:</label>
+									<div class="col-sm-4">
+										<select class="form-control" name="cMethod" required="required" style="border-radius: 4px;" onchange="cChange(this)" id="paramter">
+											<option value="1">define K clusters via k-means algorithm</option>
+											<option value="2">cut tree into K clusters
+											</option>
+											<option value="3" selected="selected">
+												cut tree based on this percent of max(height) of tree
+											</option>
+										</select>
+									</div>
+								</div>
+
+								<div class="form-group" id="pTree">
+									<label class="control-label col-sm-2">pTree:</label>
+									<div class="col-sm-3">
+										<input class="form-control" value="50" name="pTree">
+									</div>
+								</div>
+
+								<div class="form-group" id="kTree" style="display: none">
+									<label class="control-label col-sm-2">KTree:</label>
+									<div class="col-sm-3">
+										<input class="form-control" value="5" name="kTree">
+									</div>
+								</div>
+
+								<div class="form-group" id="k" style="display: none">
+									<label class="control-label col-sm-2">K:</label>
+									<div class="col-sm-3">
+										<input class="form-control" value="5" name="k">
+									</div>
+								</div>
+
+
+								<div id="show">
+									<div class="form-group" id="paired">
+										<label class="control-label col-sm-2">蛋白距离计算方法:</label>
+										<div class="col-sm-4">
+											<select class="form-control" name="sampleDist" required="required" id="distanceMethod">
+												@*<option value="euclidean" selected="selected">euclidean</option>*@
+												@*<option value="maximum">maximum</option>*@
+												@*<option value="manhattan">manhattan</option>*@
+												@*<option value="canberra">canberra</option>*@
+												@*<option value="binary">binary</option>*@
+												@*<option value="minkowski">minkowski</option>*@
+												<option value="euclidean" selected>euclidean</option>
+												<option value="canberra">canberra</option>
+												<option value="minkowski">minkowski</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group" id="paired">
+										<label class="control-label col-sm-2">蛋白聚类方法:</label>
+										<div class="col-sm-4">
+											<select class="form-control" name="sampleCluster" required="required" style="border-radius: 4px;">
+												<option value="ward">ward</option>
+												<option value="single">single</option>
+												<option value="complete" selected="selected">complete</option>
+												<option value="average">average</option>
+												<option value="mcquitty">mcquitty</option>
+												<option value="median">median</option>
+												<option value="centroid">centroid</option>
+											</select>
+										</div>
+									</div>
+								</div>
+
+
+								<div class="form-group">
+									<div class="actions col-sm-offset-2 col-sm-2">
+										<button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="mySearch()">
+											运行</button>
+									</div>
+								</div>
+
+
+							</form>
+
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+		</div>
+
+		<div id="result" style="display: none">
+			<div class="row">
+				<div class="col-md-12 col-sm-12">
+					<div class="portlet green-jungle box">
+						<div class="portlet-title">
+							<div class="caption">
+								子表达模式分析结果
+							</div>
+							<div class="tools">
+								<a href="javascript:;" class="collapse">
+								</a>
+							</div>
+						</div>
+
+						<div class="portlet-body" id="noCotent">暂无趋势结果！</div>
+						<div class="portlet-body" style="display: none;" id="content">
+
+							<form class="form-horizontal">
+								<div class="form-group">
+									<div class="col-sm-2">
+										<label>选择子表达模式：</label>
+										<select class="form-control vsName" id="subName" onchange="change(this)">
+										</select>
+									</div>
+								</div>
+							</form>
+
+							<label>显示的列:</label>
+							<div id="checkbox" class="checkbox">
+
+							</div>
+
+							<div class="table-responsive" id="tableContent">
+								<table class="display table table-bordered" id="table" data-pagination="true" data-search="true"
+								data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100, all]" data-multiple-search="true"
+								style="table-layout: fixed;
+									word-wrap: break-word"
+								data-show-export="true" data-export-types="['excel','txt']" data-export-data-type="all"
+								>
+									<thead>
+										<th data-field='geneId' data-sortable='true' id="marker"
+										data-formatter="proteinIDFmt">蛋白ID</th>
+									</thead>
+								</table>
+
+							</div>
+
+							<div style="margin-top: 10px">
+								<label>对子表达模式蛋白进行:</label>
+								<div class="row">
+									<div class="col-sm-2">
+										<button type="button" class="btn btn-primary" style="width: 90%;" id="search"
+										onclick="goEnrich()">
+											GO富集分析</button>
+									</div>
+									<div class="col-sm-2">
+										<form target="_blank" method="post" id="geneIdForm">
+											<input type="hidden" id="geneIdStr1" name="geneIdStr">
+										</form>
+										<button type="button" class="btn btn-primary" style="width: 90%;" onclick="keggEnrich()">
+											KEGG富集分析</button>
+									</div>
+									<div class="col-sm-2">
+										<button type="button" class="btn btn-primary" style="width: 90%;" id="search"
+										onclick="heatmap()">
+											热图分析</button>
+									</div>
+									<div class="col-sm-2">
+										<button type="button" class="btn btn-primary" style="width: 90%;" id="search"
+										onclick="roc()">
+											ROC曲线分析</button>
+									</div>
+								</div>
+							</div>
+						</div>
+
+
+					</div>
+					<div>
+
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12 col-sm-12">
+					<div class="portlet green-jungle box">
+						<div class="portlet-title">
+							<div class="caption">
+								子表达模式图
+							</div>
+							<div class="tools">
+								<a href="javascript:;" class="collapse">
+								</a>
+							</div>
+						</div>
+
+						<div class="portlet-body">
+							<div id="charts" align="center">没有图片结果生成！</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	</div>
+
+
+	<script>
+			var originalHtml = ""
+			var myData = {}
+			$(function () {
+				$('#multiselect').multiselect();
+
+				$('#egGene').click(function () {
+					$.ajax({
+						url: "@routes.ProteinController.getFirst10GeneIdByLf()",
+						type: "get",
+						success: function (data) {
+							$('#geneIdStr').val(data);
+							$("#form").bootstrapValidator("revalidateField", "geneIdStr")
+							return false
+						}
+					})
+				});
+				$.ajax({
+					url: "@routes.ProteinController.getGeneIds()",
+					type: "get",
+					success: function (data) {
+						$('#geneIdStr').typeahead({
+							source: data.geneIds,
+							updater: function (item) {
+								return this.$element.val().replace(matcherRegex, '') + item + matcherEnd;
+							},
+							matcher: function (item) {
+								var tquery = extractor(this.query);
+								if (!tquery) return false;
+								return ~item.toLowerCase().indexOf(tquery.toLowerCase())
+							},
+							highlighter: function (item) {
+								var query = extractor(this.query).replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+								return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+									return '<strong>' + match + '</strong>'
+								})
+							}
+						})
+					}
+				})
+
+				$.ajax({
+					url: "@routes.ProteinController.getSampleNames()",
+					type: "get",
+					success: function (data) {
+						$("#multiselect").empty()
+						$.each(data.sampleNames, function (i, v) {
+							var html = "<option value=" + v + ">" + v + "</option>"
+							$("#multiselect").append(html);
+						})
+					}
+				})
+
+
+				originalHtml = $("#tableContent").html()
+				bootstrapValidator()
+			})
+
+			function cChange(element) {
+				var value = $(element).find(">option:selected").val();
+				if (value == "1") {
+					$("#show").hide()
+				} else {
+					$("#show").show()
+				}
+				if (value == "1") {
+					$("#k").css("display", "block");
+					$("#kTree").css("display", "none");
+					$("#pTree").css("display", "none");
+
+				} else if (value == "2") {
+					$("#k").css("display", "none");
+					$("#kTree").css("display", "block");
+					$("#pTree").css("display", "none");
+				} else {
+					$("#k").css("display", "none");
+					$("#kTree").css("display", "none");
+					$("#pTree").css("display", "block");
+				}
+			}
+
+			function change(element) {
+				var index = layer.load(1, {
+					shade: [0.1, '#fff'] //0.1透明度的白色背景
+				});
+				var value = $(element).find(">option:selected").val()
+				refreshContent(value)
+				layer.close(index)
+			}
+
+			function checkSampleNames() {
+				var b = true
+				var values = $("select[name='sampleNameSelect']").find("option").map(function (i, element) {
+					return $(element).val()
+				}).get()
+				if (values.length < 2) {
+					b = false
+					swal("错误", "请至少选择两个样品", "error")
+				} else {
+					$("#sampleNameStr").val(values)
+				}
+				return b
+
+			}
+
+			function keggEnrich() {
+				$("#geneIdForm").attr("action", "@routes.ProteinController.keggEnrichBefore1()")
+				$("#geneIdForm").submit()
+			}
+
+			function goEnrich() {
+				$("#geneIdForm").attr("action", "@routes.ProteinController.goEnrichBefore1()")
+				$("#geneIdForm").submit()
+			}
+
+			function heatmap() {
+				$("#geneIdForm").attr("action", "@routes.ProteinController.heatmapBefore1()")
+				$("#geneIdForm").submit()
+			}
+
+			function roc() {
+				$("#geneIdForm").attr("action", "@routes.ProteinController.rocBefore1()")
+				$("#geneIdForm").submit()
+			}
+
+			function refreshContent(value) {
+				$("#charts").html(myData.data[value].div)
+				var geneId = []
+				$.each(myData.data[value].array, function (i, v) {
+					geneId.push(v["geneId"])
+				})
+				$("#geneIdStr1").val(geneId.join(matcherEnd))
+				var checkboxHtml = ""
+				$.each(myData.data[value].columnNames, function (i, v) {
+					checkboxHtml += "<label style='margin-right: 15px'>" +
+							"<input type='checkbox' checked='checked' value='" + v + "' onclick=\"setColumns('" + v + "')\">" + v +
+							"</label>"
+				})
+				$("#checkbox").empty().append(checkboxHtml)
+				var html = ""
+				$.each(myData.data[value].columnNames, function (i, v) {
+					html += "<th data-field='" + v + "' data-sortable='true'>" + v + "</th>"
+				})
+				$("#tableContent").empty().append(originalHtml)
+				$("#marker").after(html)
+				$('#table').bootstrapTable({
+					data: myData.data[value].array,
+					exportOptions: {
+						csvSeparator: "\t"
+					}
+				});
+			}
+
+			function mySearch() {
+				var form = $("#form")
+				var fv = form.data("bootstrapValidator")
+				fv.validate()
+				if (fv.isValid() && checkSampleNames()) {
+					var element = "<div id='content'><span id='info'>" + zhRunning + "</span>&nbsp;<img class='runningImage' src='@routes.Assets.at("images/running2.gif")' style='width: 30px;height: 20px;'></div>"
+					var index = layer.alert(element, {
+						skin: 'layui-layer-molv'
+						, closeBtn: 0,
+						title: zhInfo,
+						btn: []
+					});
+
+					$.ajax({
+						url: "@routes.ProteinController.expressPattern()",
+						type: "post",
+						data: $("#form").serialize(),
+						success: function (data) {
+							layer.close(index)
+							if (data.valid == "false") {
+								$("#charts").html("没有图片结果生成！")
+								swal("错误", data.message, "error")
+								$("#noCotent").show()
+								$("#content").hide()
+								$("#result").hide()
+							} else {
+								$("#subName").empty()
+								$.each(data.subNames, function (i, v) {
+									var html = "<option value=" + i + ">子表达模式" + v + "</option>"
+									$("#subName").append(html)
+								})
+								myData = data
+								refreshContent(0)
+								$("#noCotent").hide()
+								$("#content").show()
+								$("#result").show()
+							}
+						}
+					});
+				}
+
+			}
+
+			function bootstrapValidator() {
+				var infinityNumber = Number.MAX_VALUE
+				$('#form').bootstrapValidator({
+					framework: 'bootstrap',
+					icon: {
+						valid: 'glyphicon glyphicon-ok',
+						invalid: 'glyphicon glyphicon-remove',
+						validating: 'glyphicon glyphicon-refresh'
+					},
+					fields: {
+						geneIdStr: {
+							validators: {
+								notEmpty: {
+									message: '蛋白ID不能为空！'
+								},
+							}
+						},
+						pTree: {
+							validators: {
+								notEmpty: {
+									message: 'pTree不能为空！'
+								},
+								between: {
+									min: 0,
+									max: infinityNumber,
+									inclusive: false,
+									message: "pTree必须大于0！"
+								},
+								numeric: {
+									message: "pTree必须为数字！"
+								},
+							}
+						},
+						k: {
+							validators: {
+								notEmpty: {
+									message: 'k不能为空！'
+								},
+								between: {
+									min: 0,
+									max: infinityNumber,
+									inclusive: false,
+									message: "k必须大于0！"
+								},
+								integer: {
+									message: "k必须为整数！"
+								},
+							}
+						},
+						kTree: {
+							validators: {
+								notEmpty: {
+									message: 'kTree不能为空！'
+								},
+								between: {
+									min: 0,
+									max: infinityNumber,
+									inclusive: false,
+									message: "kTree必须大于0！"
+								},
+								integer: {
+									message: "kTree必须为整数！"
+								},
+							}
+						},
+
+					}
+				})
+			}
+
+	</script>
+
+}

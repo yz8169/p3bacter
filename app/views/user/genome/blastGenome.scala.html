@@ -1,0 +1,303 @@
+@()(implicit request: RequestHeader)
+@main("Blastn against genome") {
+
+	<div class="row">
+		<div class="form-group col-sm-12">
+			<h2 class="page-heading"
+			style="text-align: left;
+				border-bottom: 5px solid #e9f3f4">Blastn against genome</h2>
+		</div>
+	</div>
+
+	<form class="registration-form form-horizontal" id="form"
+	accept-charset="UTF-8" method="post">
+
+		<div class="form-group">
+			<label class="control-label col-sm-2">Type of query:</label>
+			<div class="col-sm-3">
+				<select class="form-control" onchange="change(this)" name="method">
+					<option selected value="text">Text</option>
+					<option value="file">File</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="form-group" id="queryContent">
+			<label class="control-label col-sm-2">Query text:</label>
+			<div class="col-sm-8">
+				<textarea class="form-control monospace" name="queryText" id="queryText" rows="7"></textarea>
+				<span class="help-block">e.g.,&nbsp;<a href="#"><em id="egQuery">
+					示例</em></a></span>
+			</div>
+		</div>
+
+		<div id="queryFile" style="display: none;">
+			<div class="form-group">
+				<label class="control-label col-sm-2">Query fasta file:</label>
+				<div class="col-sm-8">
+					<input id="input-1" type="file" class="file control-label" name="file" data-show-preview="false"
+					data-show-upload="false">
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="control-label col-sm-2">Database:</label>
+			<div class="col-sm-6">
+				<select class="form-control db" name="db">
+				</select>
+			</div>
+		</div>
+
+
+		<div class="form-group">
+			<label class="control-label col-sm-2">Evalue:</label>
+			<div class="col-sm-2">
+				<input class="form-control" name="evalue" id="evalue" value="1e-5">
+			</div>
+
+			<label class="control-label col-sm-2">Word size:</label>
+			<div class="col-sm-2">
+				<input class="form-control" name="wordSize" id="mCharacteristic" value="28">
+			</div>
+
+		</div>
+
+		<div class="form-group">
+			<label class="control-label col-sm-2">Max target seqs:</label>
+			<div class="col-sm-2">
+				<input class="form-control" name="maxTargetSeqs" id="mCharacteristic" value="10">
+			</div>
+		</div>
+
+		<div class="form-group">
+			<div class="actions col-sm-offset-2 col-sm-2">
+				<button type="button" class="btn btn-primary" style="width: 90%;" id="search" onclick="mySearch()">
+					运行</button>
+			</div>
+
+			<div class="actions  col-sm-2">
+				<button type="reset" class="btn btn-primary" style="width: 90%;">
+					重置</button>
+			</div>
+		</div>
+
+	</form>
+
+	<div id="result" style="display: none">
+		<hr>
+		<div style="height: 50px">
+			<h4 style="color: black;
+				display: inline-block;
+				margin: 1.2em 0 0.3em" >Blastn against genome results:</h4>
+			<button class="btn btn-primary " style="float: right;
+				margin: 1.2em 0 0.3em;
+				padding: 2px 12px;
+				background: #344A76;" onclick="downloadTable()">下载blast表格结果</button>
+		</div>
+		<iframe id="iframe" name="iframe" src="@routes.ToolController.iframe()" style="
+			width: 1140px;
+			height: 1000px;
+			border: 0px;
+			margin: 0px;
+			padding: 0px
+		">
+		</iframe >
+	</div>
+
+	<script>
+			var base64;
+			$(function () {
+				$.ajax({
+					url: "@routes.BrowseController.getAllSample()",
+					success: function (data) {
+						var dbNames = $.map(data, function (v) {
+							return {
+								text: v.organism + "(" + v.samplename + ")",
+								id: v.samplename
+							}
+						})
+						$(".db").select2(
+								{
+									data: dbNames,
+								}
+						);
+
+					}
+				});
+
+				bootstrapValidator()
+			})
+
+			function downloadTable() {
+				var fileName = "blast.xls"
+				var content = base64
+				var blob = new Blob([content], {
+					type: "text/plain;charset=utf-8"
+				})
+				saveAs(blob, fileName)
+			}
+
+			function change(element) {
+				var value = $(element).find(">option:selected").val()
+				if (value == "text") {
+					$("#queryContent").show()
+					$("#queryFile").hide()
+				} else {
+					$("#queryContent").hide()
+					$("#queryFile").show()
+				}
+			}
+
+			$('#egQuery').click(function () {
+				var eg = ">SF0001\n" +
+						"ATGAAACGCATTAGCACCACCATTACCACCACCATCACCATTACCACAGGTAACGGTGCGGGCTGA\n" +
+						">SF0005\n" +
+						"ATGCAATCTATCGTACTCGCACTTTCCCTGGTTCTGGTCGCTCCCATGGCAGCACAGGCTGCGGAAATTACGTTAGTCCCGTCAGTAAAATTACAGATAGGCGATCGTGATAATCGTGGCTATTACTGGGATGGAGGTCACTGGCGCGACCACGGCTGGTGGAAACAACATTATGAATGGCGAGGCAATCGCTGGCACCCACACGGACCGCCGCCACCGCCGCGCCACCATAAGAAAGCTCCTCATGATCATCACGGCGGTCATGGTCCAGGCAAACATCACCGCTAA "
+				$('#queryText').val(eg);
+				$("#form").bootstrapValidator("revalidateField", "queryText")
+			});
+
+			function mySearch() {
+				var form = $("#form")
+				var fv = form.data("bootstrapValidator")
+				fv.validate()
+				if (fv.isValid()) {
+					var form1 = new FormData($("#form")[0]);
+					if (fileExist()) {
+						zhRunning = "正在上传文件"
+					}
+					var element = "<div id='content'><span id='info'>" + zhRunning + "</span><span id='progress'></span>&nbsp;<img class='runningImage' src='@routes.Assets.at("images/running2.gif")' style='width: 30px;height: 20px;'></div>"
+					var index = layer.alert(element, {
+						skin: 'layui-layer-molv'
+						, closeBtn: 0,
+						title: zhInfo,
+						btn: []
+					});
+					$.ajax({
+						xhr: function () {
+							var myXhr = $.ajaxSettings.xhr();
+							if (myXhr.upload) {
+								myXhr.upload.addEventListener('progress', progressHandlingFunction, false);
+							}
+							return myXhr
+						},
+						url: "@routes.GenomeController.blastGenome()",
+						type: "post",
+						processData: false,
+						contentType: false,
+						data: form1,
+						success: function (data) {
+							layer.close(index)
+							if (data.valid == "false") {
+								swal("错误", data.message, "error")
+								$("#result").hide()
+							} else {
+								base64 = data.table
+								$('#iframe').contents().find("body").html(data.html)
+								$("#result").show()
+							}
+
+						}
+					});
+				}
+			}
+
+			function bootstrapValidator() {
+				var infinityNumber = Number.MAX_VALUE
+				$('#form').bootstrapValidator({
+					framework: 'bootstrap',
+					icon: {
+						valid: 'glyphicon glyphicon-ok',
+						invalid: 'glyphicon glyphicon-remove',
+						validating: 'glyphicon glyphicon-refresh'
+					},
+					fields: {
+						queryText: {
+							validators: {
+								notEmpty: {
+									message: 'Query text不能为空！'
+								}
+							}
+						},
+						file: {
+							validators: {
+								notEmpty: {
+									message: 'Query fasta file不能为空！'
+								},
+								file: {
+									extension: 'fa,fasta',
+									message: 'Query fasta file必须为fasta文件！'
+								}
+							}
+						},
+						evalue: {
+							validators: {
+								notEmpty: {
+									message: 'Evalue不能为空！'
+								},
+								numeric: {
+									message: 'Evalue必须是数字！'
+								},
+								between: {
+									min: "0",
+									max: infinityNumber,
+									message: "Evalue必须大于等于0！"
+								}
+							}
+						},
+						wordSize: {
+							validators: {
+								notEmpty: {
+									message: 'Word size不能为空！'
+								},
+								integer: {
+									message: 'Word size必须是整数！'
+								},
+								between: {
+									min: "4",
+									max: infinityNumber,
+									message: "Word size必须大于等于4！"
+								}
+							}
+						},
+						maxTargetSeqs: {
+							validators: {
+								notEmpty: {
+									message: 'Max target seqs不能为空！'
+								},
+								integer: {
+									message: 'Max target seqs必须是整数！'
+								},
+								between: {
+									min: "0",
+									max: infinityNumber,
+									message: "Max target seqs必须大于等于0！"
+								}
+							}
+						},
+						db: {
+							validators: {
+								callback: {
+									message: '必须选择一个database！',
+									callback: function (value, validator, $field) {
+										var options = validator.getFieldElements('db').val();
+										return (options != null);
+									}
+								}
+							}
+						},
+					}
+				});
+			}
+
+			$("#input-1").fileinput({
+				showPreview: false,
+				browseLabel: "选择...",
+				removeLabel: "删除文件",
+				language: "zh"
+			});
+	</script>
+
+
+}

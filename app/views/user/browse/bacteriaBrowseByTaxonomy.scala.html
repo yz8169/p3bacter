@@ -1,0 +1,273 @@
+@()(implicit request: RequestHeader)
+@main("分类学浏览") {
+	<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/style.css")">
+
+	<div class="row">
+		<div class="form-group col-sm-12">
+			<h2 class="page-heading"
+			style="text-align: left;
+				border-bottom: 5px solid #e9f3f4">分类学浏览</h2>
+		</div>
+	</div>
+
+	<div id="wrapcontent">
+		<div id="content_1"><!--TYPO3SEARCH_begin--><div id="c2" class="csc-default">
+			<div id="tx_pmtree_pi1_browser_wrap">
+				<div class="tx_pmtree_pi1_browser_spacer"></div>
+				<div id="tx_pmtree_pi1_path">
+
+					<span class="arrowBlack pathVisible" id="classify">
+						分类<span class="fa fa-caret-right"></span>
+					</span>
+
+				</div>
+				<div id="tx_pmtree_pi1_browser">
+					<div id="tx_pmtree_pi1_root">
+						<div class="tx_pmtree_pi1_browserbox" id="phylumAllContent">
+							<p class="title" style="text-indent: 0">
+								<span style="color: black">门名</span>
+							</p>
+							<div class="" id="phylumContent">
+								<p style="padding: 5px 5px;">
+									<img src="/assets/images/loading.gif" alt="loading"/>
+								</p>
+							</div>
+						</div>
+
+					</div>
+				</div>
+				<form method="post" id="form" style="display: none">
+					<input type="text" name="phylum" id="phylum">
+					<input type="text" name="outline" id="outline">
+					<input type="text" name="order" id="order">
+					<input type="text" name="family" id="family">
+					<input type="text" name="genus" id="genus">
+					<input type="text" name="species" id="species">
+				</form>
+
+			</div>
+		</div><!--TYPO3SEARCH_end--></div>
+	</div>
+	<script>
+			function setBadge(prefixId, value, id, method) {
+				$("#" + prefixId + "").nextAll().remove()
+				var badge = "<span class='arrowBlack pathVisible' id='" + id + "'><a title='" + value + "' href='javascript:void(0)'  onclick=\"" + method + "('" + value + "')\"  >" +
+						"" + value + "<span class='fa fa-caret-right'></span>" +
+						"</a></span>"
+				$("#" + prefixId + "").after(badge)
+			}
+
+			function setCaret(rClass, element) {
+				$("." + rClass + "").remove()
+				var caretHtml = "<span class='fa fa-caret-right " + rClass + "' style='margin-left: 5px'></span>"
+				$(element).append(caretHtml)
+			}
+
+			function setPrefixHtml(prefix, value, name) {
+				$("#" + prefix + "").nextAll().remove()
+				var prefixHtml = "<div class='tx_pmtree_pi1_browserbox' id='" + value + "AllContent'>" +
+						"<p class='title' style='text-indent: 0'>" +
+						"<span style='color: black'>" + name + "</span>" +
+						"</p>" +
+						"<div class='' id='" + value + "Content'>" +
+						"<p style='padding: 5px 5px;'>" +
+						"<img src='/assets/images/loading.gif' alt='loading'/>" +
+						"</p>" +
+						"</div>" +
+						"</div>"
+				$("#tx_pmtree_pi1_root").append(prefixHtml)
+			}
+
+			function setHtml(data, method, id) {
+				var num = data.num
+				var content = ""
+				$.each(data.info, function (n, value) {
+							content += "<li class='folder open'><a href='javascript:void(0)' title='" + value + "' onclick=\"" + method + "(this,'" + value + "')\">" + value + "</a></li>"
+						}
+				);
+				var html = "<div class='tabs'>" +
+						"<span class='node openedNode' style='margin-left: 5px'>" +
+						"<span class='fa fa-caret-down'></span>&nbsp;(<span>" + num + "</span>)" +
+						"</span>" +
+						"</div>" +
+						"<div class='nodes'>" +
+						"<ul style='white-space: nowrap;overflow: auto;height: 447px'>" +
+						content +
+						"</ul>" +
+						"</div>"
+				$("#" + id + "").empty().append(html)
+			}
+
+
+			function getOutlineInfo(element, value) {
+				setCaret("phylumCaret", element)
+				getOutlineInfo1(value)
+			}
+
+			function getOutlineInfo1(value) {
+				var phylumName = value
+				setBadge("classify", phylumName, "phylumName", "getOutlineInfo1")
+				$("#phylum").val(phylumName)
+				setPrefixHtml("phylumAllContent", "outline", "纲名")
+				$.ajax({
+					url: "@routes.BrowseController.getOutlineInfo()",
+					type: "post",
+					data: $("#form").serialize(),
+					success: function (data) {
+						setHtml(data, "getOrderInfo", "outlineContent")
+					},
+					error: function (e) {
+						swal("错误", "得到纲名信息错误！", "error")
+					}
+				});
+			}
+
+			function getOrderInfo(element, value) {
+				setCaret("outlineCaret", element)
+				getOrderInfo1(value)
+			}
+
+			function getOrderInfo1(value) {
+				var outline = value
+				setBadge("phylumName", outline, "outlineName", "getOrderInfo1")
+				$("#outline").val(outline)
+				setPrefixHtml("outlineAllContent", "order", "目名")
+				$.ajax({
+					url: "@routes.BrowseController.getOrderInfo()",
+					type: "post",
+					data: $("#form").serialize(),
+					success: function (data) {
+						setHtml(data, "getFamilyInfo", "orderContent")
+					},
+					error: function (e) {
+						swal("错误", "得到目名信息错误！", "error")
+					}
+				});
+			}
+
+			function getFamilyInfo(element, value) {
+				setCaret("orderCaret", element)
+				getFamilyInfo1(value)
+			}
+
+			function getFamilyInfo1(value) {
+				var order = value
+				setBadge("outlineName", order, "orderName", "getFamilyInfo1")
+				$("#order").val(order)
+				setPrefixHtml("orderAllContent", "family", "科名")
+				$.ajax({
+					url: "@routes.BrowseController.getFamilyInfo()",
+					type: "post",
+					data: $("#form").serialize(),
+					success: function (data) {
+						setHtml(data, "getGenusInfo", "familyContent")
+					},
+					error: function (e) {
+						swal("错误", "得到科名信息错误！", "error")
+					}
+				});
+			}
+
+
+			function getGenusInfo(element, value) {
+				setCaret("familyCaret", element)
+				getGenusInfo1(value)
+			}
+
+			function getGenusInfo1(value) {
+				var family = value
+				setBadge("orderName", family, "familyName", "getGenusInfo1")
+				$("#family").val(family)
+				setPrefixHtml("familyAllContent", "genus", "属名")
+				$.ajax({
+					url: "@routes.BrowseController.getGenusInfo()",
+					type: "post",
+					data: $("#form").serialize(),
+					success: function (data) {
+						setHtml(data, "getSpeciesInfo", "genusContent")
+					},
+					error: function (e) {
+						swal("错误", "得到属名信息错误！", "error")
+					}
+				});
+			}
+
+			function getSpeciesInfo(element, value) {
+				setCaret("genusCaret", element)
+				getSpeciesInfo1(value)
+			}
+
+			function getSpeciesInfo1(value) {
+				var genus = value
+				setBadge("familyName", genus, "genusName", "getSpeciesInfo1")
+				$("#genus").val(genus)
+				setPrefixHtml("genusAllContent", "species", "种名")
+				$.ajax({
+					url: "@routes.BrowseController.getSpeciesInfo()",
+					type: "post",
+					data: $("#form").serialize(),
+					success: function (data) {
+						setHtml(data, "getIdInfo", "speciesContent")
+					},
+					error: function (e) {
+						swal("错误", "得到种名信息错误！", "error")
+					}
+				});
+			}
+
+			function getIdInfo(element, value) {
+				setCaret("speciesCaret", element)
+				getIdInfo1(value)
+			}
+
+			function getIdInfo1(value) {
+				var species = value
+				setBadge("genusName", species, "speciesName", "getIdInfo1")
+				$("#species").val(species)
+				setPrefixHtml("speciesAllContent", "id", "样品编号")
+				$.ajax({
+					url: "@routes.BrowseController.getIdInfo()",
+					type: "post",
+					data: $("#form").serialize(),
+					success: function (data) {
+						var num = data.num
+						var content = ""
+						$.each(data.info, function (n, value) {
+									var href = "@routes.BrowseController.getGeneInfoBefore()"
+									content += "<li class='folder open'><a href='" + href + "?sampleName=" + value + "' target='_blank' title='详细信息'\">" + value + "</a></li>"
+								}
+						);
+						var html = "<div class='tabs'>" +
+								"<span class='node openedNode' style='margin-left: 5px'>" +
+								"<span class='fa fa-caret-down'></span>&nbsp;(<span>" + num + "</span>)" +
+								"</span>" +
+								"</div>" +
+								"<div class='nodes'>" +
+								"<ul style='white-space: nowrap;overflow: auto;height: 447px'>" +
+								content +
+								"</ul>" +
+								"</div>"
+						$("#idContent").empty().append(html)
+					},
+					error: function (e) {
+						swal("错误", "得到ID信息错误！", "error")
+					}
+				});
+			}
+
+			$(document).ready(function () {
+				$.ajax({
+					url: "@routes.BrowseController.getPhylumInfo()",
+					type: "get",
+					success: function (data) {
+						setHtml(data, "getOutlineInfo", "phylumContent")
+					},
+					error: function (e) {
+						swal("错误", "得到门名信息错误！", "error")
+					}
+				});
+			})
+	</script>
+
+
+}

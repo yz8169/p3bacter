@@ -1,0 +1,504 @@
+@(sampleNames: Seq[String])(implicit request: RequestHeader)
+	@user.protein.main("分组")("group") {
+		<div class="page-content">
+
+			<div class="page-bar">
+				<ul class="page-breadcrumb">
+					<li>
+						<i class="fa fa-group"></i>
+						<a href="#">分组</a>
+					</li>
+				</ul>
+			</div>
+
+
+			<div class="row-fluid">
+
+				<div class="row">
+					<div class="col-md-12 col-sm-12">
+						<div class="portlet green-jungle box">
+							<div class="portlet-title">
+								<div class="caption">
+									分组信息列表<span id="question1" style="margin-bottom: 5px">
+									<a type="button" title="说明" data-container="body" data-toggle="popover"
+									data-placement="right" data-content="当分组个数为2组，且样品个数相等时，可构建配对样品关系，用于后续2组间的配对样品T/U检验。"
+									data-trigger="hover"><i style="color: white" class="fa fa-question-circle-o"></i></a>
+								</span>
+								</div>
+							</div>
+
+							<div class="portlet-body">
+
+
+								<div class="table-responsive">
+
+									<div id="toolbar">
+										<button type="button" class="btn btn-primary" id="deleteButton" onclick="insertGroup()">
+											<i class="fa fa-plus"></i>&nbsp;新增分组信息
+										</button>
+									</div>
+
+									<table class="display table table-bordered table-hover table-striped" id="table" data-pagination="true" data-search="true"
+									data-toolbar="#toolbar" data-page-list="[10, 25, 50, 100]" data-multiple-search="true"
+									>
+										<thead>
+											<th data-field='groupname' data-sortable='true' id="marker">分组信息名</th>
+											<th data-field='content' data-sortable='true' id="marker">分组信息</th>
+											<th data-field='relation' data-sortable='true' id="marker">配对样品关系</th>
+											<th data-field='operate' data-sortable='true' id="marker">操作</th>
+										</thead>
+									</table>
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+
+				<div id="addModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+					<div class="modal-dialog" style="width: 800px">
+						<div class="modal-content">
+							<div class="modal-header bg-primary">
+								<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+								<h4 class="modal-title">
+									<i class="fa fa-plus"></i>
+									<span id="lblAddTitle" style="font-weight: bold">新增分组信息</span>
+								</h4>
+							</div>
+							<form id="form" data-toggle="validator">
+								<div class="modal-body">
+									<div class="row-fluid">
+
+										<div class="row">
+											<div class="col-sm-6">
+												<div class="form-group">
+													<label class="control-label">
+														分组信息名: </label>
+													<input class="form-control" name="groupingName" id="groupingName" >
+												</div>
+											</div>
+										</div>
+
+										<div id="groupContent"></div>
+
+										<div class="row" id="addGroup" style="display: none;">
+											<div class="form-group col-sm-12">
+												<a class="btn btn-primary" onclick="addGroup()">新增分组</a>
+											</div>
+										</div>
+
+									</div>
+								</div>
+								<div class="modal-footer bg-info">
+									<input type="hidden" id="ID" name="ID" />
+									<button type="button" class="btn blue" onclick="startGroup()">确定</button>
+									<button type="button" class="btn green" data-dismiss="modal">取消</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+
+
+				<div id="addRelation" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+					<div class="modal-dialog" style="width: 800px">
+						<div class="modal-content">
+							<div class="modal-header bg-primary">
+								<button type="button" class="close" data-dismiss="modal" aria-hidden="true"></button>
+								<h4 class="modal-title">
+									<i class="fa fa-plus"></i>
+									<span id="lblAddTitle" style="font-weight: bold">构建配对样品关系</span>
+								</h4>
+							</div>
+							<form id="relationForm" data-toggle="validator">
+								<div class="modal-body">
+									<div class="row-fluid">
+										<div class="row">
+											<div class="col-sm-6">
+												<div class="form-group">
+													<label class="control-label">
+														分组信息名: </label>
+													<input class="form-control" name="groupingName" id="groupingName" readonly>
+													<input class="form-control" name="id" id="id" type="hidden">
+												</div>
+											</div>
+										</div>
+
+										<div id="relationContent">
+
+										</div>
+									</div>
+								</div>
+								<div class="modal-footer bg-info">
+									<input type="hidden" id="ID" name="ID" />
+									<button type="button" class="btn blue" onclick="startRelation()">确定</button>
+									<button type="button" class="btn green" data-dismiss="modal">取消</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+
+
+			</div>
+
+		</div>
+
+
+		<script>
+				var i = 0;
+				var j = 0;
+				var list = {};
+				$(function () {
+
+					$("#question1 a").popover()
+
+					$.ajax({
+						url: "@routes.ProteinController.getAllGroup()",
+						type: "get",
+						dataType: "json",
+						success: function (data) {
+							$('#table').bootstrapTable({
+								data: data
+							});
+						}
+					})
+
+					bootstrapValidator()
+					showGroup()
+				})
+
+				function deleteGroup(value) {
+					$("#group" + value).remove();
+					j--;
+					if (j < num) {
+						$(".deleteGroup").attr("disabled", true)
+					}
+				}
+
+				function deleteGrouping(id) {
+					swal({
+								title: "",
+								text: "确定要删除此分组信息吗？",
+								type: "warning",
+								showCancelButton: true,
+								showConfirmButton: true,
+								confirmButtonClass: "btn-danger",
+								confirmButtonText: "确定",
+								closeOnConfirm: false,
+								cancelButtonText: "取消"
+							},
+							function () {
+								$.ajax({
+									url: "@routes.ProteinController.deleteGroupById()",
+									type: "get",
+									data: {
+										"id": id
+									},
+									success: function (data) {
+										$('#table').bootstrapTable("load", data);
+										swal("成功！", "删除分组成功！", "success")
+									}
+								});
+							});
+				}
+
+				function showGroup() {
+					i = 0;
+					j = 0
+					json = {}
+					$("#groupContent").empty();
+					getList();
+					addGroup()
+					addGroup()
+				}
+
+				function getList() {
+					$.ajax({
+						url: "@routes.ProteinController.getSampleNames()",
+						type: "get",
+						dataType: "json",
+						async:false,
+						success: function (data) {
+							list = data.sampleNames
+						}
+					})
+				}
+
+				function addGroup() {
+					i++;
+					j++;
+					var html = "<div id='group" + i + "'><div class='row'>"
+							+ "<div class='form-group col-sm-6'>"
+							+ "<label class='control-label'>组名：</label>"
+							+ "<div class='input-group'>"
+							+ "<input class='form-control' type='text' value='group" + i
+							+ "' style='border-radius: 4px;' name='groupNames[]' id='groupName" + i + "' required='required' />" + "</div>" + "</div>"
+							+ "<div class='form-group col-sm-6'>"
+							+ "<label class='control-label'>选择属于这个组的样品名：</label>"
+							+ "<div class='input-group'>"
+							+ "<div class='checkbox' id='" + i + "'></div>"
+							+ "<input type='hidden' id='sampleName" + i + "' name='sampleNames[]'>"
+							+ "</div>"
+							+ "</div>" + "</div>" + "<div class='row'>"
+							+ "<div class='form-group col-sm-12'>"
+							+ "<a class='btn btn-primary deleteGroup' onclick='deleteGroup("
+							+ i + ")'>删除此分组</a>" + "</div>" + "</div>" + "<div class='row'>"
+							+ "<div class='form-group col-sm-12'>"
+							+ "<div style='border-bottom: 2px solid #e9f3f4'></div>" + "</div>"
+							+ "</div></div>";
+					$("#groupContent").append(html);
+					$("#form").bootstrapValidator("addField", $("#groupName" + i))
+					if (i < num) {
+						$(".deleteGroup").attr("disabled", true)
+					} else {
+						$(".deleteGroup").attr("disabled", false)
+					}
+					$
+							.each(
+									list,
+									function (j, val) {
+										var html = "<label style='padding-right: 15px;'> <input type='checkbox' value='"
+												+ val
+												+ "' onclick='change(this)' >"
+												+ val
+												+ "</label>"
+										$("#" + i).append(html);
+									});
+					$("#addGroup").css("display", "block")
+				}
+
+				function addRelation(id) {
+					$.ajax({
+						url: "@routes.ProteinController.selectGroupById()",
+						type: "get",
+						data: {
+							"id": id
+						},
+						success: function (data) {
+							$("#relationForm").find("input[name='groupingName']").val(data.groupingName)
+							$("#relationForm").find("input[name='id']").val(id)
+							$("#relationContent").empty()
+							$.each(data.group1SampleNames, function (i, v) {
+								var html = "<div id='group" + i + "'><div class='row'>"
+										+ "<div class='form-group col-sm-6'>"
+										+ "<label class='control-label'>" + data.group1Name + "组样品名：</label>"
+										+ "<div class='input-group'>"
+										+ "<input class='form-control' type='text' value='" + v
+										+ "' style='border-radius: 4px;' readonly name='group1SampleNames[]' id='group1SampleNames' required='required' />" + "</div>" + "</div>"
+										+ "<div class='form-group col-sm-6'>"
+										+ "<label class='control-label'>选择" + data.group2Name + "组与之对应的样品：</label>"
+										+ "<div class='input-group'>"
+										+ "<div class='checkbox' id='r" + i + "'></div>"
+										+ "</div>" + "</div>" + "<div class='row'>"
+										+ "<div class='form-group col-sm-12'>"
+										+ "<div style='border-bottom: 2px solid #e9f3f4'></div>" + "</div>"
+										+ "</div></div>";
+								$("#relationContent").append(html);
+								$.each(data.group2SampleNames, function (j, val) {
+									var html = "<label style='padding-right: 15px;'> <input type='checkbox' value='"
+											+ val
+											+ "' onclick='rChange(this)' name='group2SampleNames[]'>"
+											+ val
+											+ "</label>"
+									$("#r" + i).append(html);
+								});
+
+							})
+
+							$("#addRelation").modal("show")
+						}
+					});
+
+
+				}
+
+				function checkRSampleNames() {
+					var flag = true
+					$("#relationForm").find(".checkbox").each(function (i, element) {
+						var b = false;
+						$(element).find("input").each(function (j, inElement) {
+							if ($(inElement).is(":checked")) {
+								b = true;
+								return false
+							}
+						});
+
+						if (!b) {
+							flag = false;
+							layer.msg("配对未完成！", {
+								icon: 5,
+								time: 1500
+							});
+							return false;
+						}
+					});
+
+					return flag;
+				}
+
+				function startGroup() {
+					var form = $("#form")
+					var fv = form.data("bootstrapValidator")
+					fv.validate()
+					if (fv.isValid() && checkSampleNames()) {
+
+						$(".checkbox").each(function (i) {
+							var id = $(this).attr("id")
+							var array = []
+							$(this).find("input").each(function (j, inElement) {
+								if ($(inElement).is(":checked")) {
+									var val = $(inElement).val()
+									array.push(val)
+								}
+							});
+							$("#sampleName" + id).val(array)
+						})
+
+						$.ajax({
+							url: "@routes.ProteinController.addGroup()",
+							type: "post",
+							data: $("#form").serialize(),
+							success: function (data) {
+								if (data.valid == "false") {
+									layer.msg(data.message, {
+										icon: 5,
+										time: 2000
+									});
+								} else {
+									$("#addModal").modal("hide")
+									fv.resetForm(true)
+									swal("成功！", "新增分组信息成功！", "success")
+									$('#table').bootstrapTable("load", data);
+									showGroup()
+								}
+
+							}
+						});
+					}
+
+				}
+
+				function startRelation() {
+					if (checkRSampleNames()) {
+						$.ajax({
+							url: "@routes.ProteinController.updateRelation()",
+							type: "post",
+							data: $("#relationForm").serialize(),
+							success: function (data) {
+								if (data.valid == "false") {
+									layer.msg(data.message, {
+										icon: 5,
+										time: 2000
+									});
+								} else {
+									$("#addRelation").modal("hide")
+									swal("成功！", "构建配对样品关系成功！", "success")
+									$('#table').bootstrapTable("load", data);
+								}
+							}
+						});
+					}
+				}
+
+				function bootstrapValidator() {
+					$('#form').bootstrapValidator({
+						framework: 'bootstrap',
+						icon: {
+							valid: 'glyphicon glyphicon-ok',
+							invalid: 'glyphicon glyphicon-remove',
+							validating: 'glyphicon glyphicon-refresh'
+						},
+						fields: {
+							groupingName: {
+								validators: {
+									notEmpty: {
+										message: '分组信息名不能为空！'
+									}
+								}
+							},
+							'groupNames[]': {
+								validators: {
+									notEmpty: {
+										message: '组名不能为空！'
+									},
+								}
+							},
+						}
+					})
+
+				}
+
+
+
+				function insertGroup() {
+					$("#addModal").modal("show")
+				}
+
+				function change(element) {
+					var value = $(element).val();
+					if ($(element).is(":checked")) {
+						var b = $("#form").find(":checkbox[value=" + value + "]:checked").length
+						if (b == 2) {
+							$(element).prop("checked", false);
+							layer.msg(value + " 已被其他组选中！", {
+								icon: 5,
+								time: 1500
+							});
+						}
+					}
+				}
+
+				function checkSampleNames() {
+					var flag = true
+					$(".checkbox").each(function (i, element) {
+						//一个未选中为false
+						var b = false;
+						$(element).find("input").each(function (j, inElement) {
+							if ($(inElement).is(":checked")) {
+								//只要有一个选中即为true
+								b = true;
+								return false
+							}
+						});
+
+						if (!b) {
+							flag = false;
+							layer.msg("每组必须选中至少一个样品！", {
+								icon: 5,
+								time: 1500
+							});
+							return false;
+						}
+					});
+
+					return flag;
+				}
+
+
+				function rChange(element) {
+					var value = $(element).val();
+					if ($(element).is(":checked")) {
+						var b = $("#relationForm").find(":checkbox[value=" + value + "]:checked").length
+						if (b == 2) {
+							$(element).prop("checked", false);
+							layer.msg(value + " 已与其他样品配对！", {
+								icon: 5,
+								time: 1500
+							});
+						}
+						var length = $(element).parent().parent().find(":checkbox:checked").length
+						if (length == 2) {
+							$(element).prop("checked", false);
+							layer.msg("只能选择一个样品！", {
+								icon: 5,
+								time: 1500
+							});
+						}
+					}
+				}
+
+		</script>
+
+	}

@@ -1,0 +1,729 @@
+{# -*- coding: utf-8 -*-
+
+Copyright The Hyve B.V. 2014-2015
+License: GPL version 3 or (at your option) any higher version
+#}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name=generator content="blast2html; see https://github.com/thehyve/blast2html/">
+
+    <title>Blast output</title>
+
+    <style>
+        .body1 {
+            color: #333333;
+            font-family: Arial, Sans-Serif;
+        }
+
+        .myBody {
+            color: #333333;
+            font-family: Arial, Sans-Serif;
+        }
+
+        .myBody :link {
+            color: #336699;
+        }
+
+        .myBody .right {
+            float: right;
+        }
+
+        /* Galaxy with html sanitization enabled strips the header of this html page. If so, show the user a warning.*/
+        #strip_html_warning {
+            display: none;
+        }
+
+        .myBody #content {
+            margin: 0 2em;
+            padding: 0.5em;
+            border: 1px solid #888888;
+            background-color: #d3dff5;
+        }
+
+        .myBody h1, .myBody h2, .myBody h3, .myBody h4, .myBody h5, .myBody h6 {
+            color: #2A6979;
+            font-family: arial, verdana, sans-serif;
+            letter-spacing: -1px;
+            margin: 1.2em 0 0.3em;
+        }
+
+        .myBody h1 {
+            font-size: 200%;
+        }
+
+        .myBody h2 {
+            font-size: 150%;
+        }
+
+        .myBody h1,.myBody h2 {
+            border-bottom: 1px solid #CCCCCC;
+            padding-bottom: 0.1em;
+        }
+
+        .myBody h3 {
+            font-size: 120%;
+            font-weight: bold;
+        }
+
+        .myBody h5.darkHeader {
+            color: #4D4D4D;
+            letter-spacing: 0;
+            font-weight: bold;
+            font-size: 108%;
+        }
+
+        .myBody #nodata {
+            font-weight: bold;
+        }
+
+        .myBody .index {
+            margin-bottom: 3em;
+        }
+
+        .myBody .index div.indexentry {
+            margin: 1.2em 1.6em;
+            font-weight: bold;
+            font-size: 100%;
+        }
+
+        .myBody .headerdata {
+            font-size: 90%;
+        }
+
+        .myBody .headerdata .param {
+            font-weight: bold;
+            text-align: right;
+            padding: 0 1em;
+        }
+
+        .myBody .grey {
+            background-color: #eeeeee;
+            border: 1px solid #cccccc;
+            padding: 1em;
+        }
+
+        .myBody .white {
+            background-color: white;
+            border: 1px solid #cccccc;
+            padding: 1.5em 2%;
+        }
+
+        .myBody .graphicrow {
+            clear: left;
+            width: 100%;
+        }
+
+        .myBody .graphicitem {
+            float: left;
+        }
+
+
+        .myBody .graphics .grey {
+            text-align: center;
+        }
+
+        .myBody .graphic {
+            background-color: white;
+            border: 2px solid black;
+            padding: 1.5em;
+            margin: auto;
+        }
+
+        .myBody .centered,.myBody .defline,.myBody div.legend,.myBody div.tablewrapper {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .myBody .defline {
+            background-color: white;
+            border: 1px solid black;
+            margin: .5em auto;
+            padding-left: .2em;
+            padding-right: .2em;
+            max-width: 50em;
+            text-align: left;
+            height: 2.8em;
+            overflow: hidden;
+        }
+
+        .myBody div.legend {
+            max-width: 40em;
+        }
+
+        .myBody div.legend div {
+            width: 100%;
+            color: white;
+            font-weight: bold;
+            border-spacing: 0;
+        }
+
+        .myBody div.legend div .graphicitem {
+            width: 20%;
+            padding: 0;
+            margin: 0;
+            border: none;
+        }
+
+        .myBody div.tablewrapper {
+            width: 50%;
+            min-width: 60em;
+        }
+
+        /* For small widths we give the graphic 100% */
+        @media (max-width: 72.5em) {
+            .myBody div.tablewrapper {
+                width: 100%;
+                min-width: 0px;
+            }
+        }
+
+        .myBody .scale {
+            width: 100%;
+            margin: .5em 0;
+            font-weight: bold;
+        }
+
+        .myBody .scale div {
+            color: red;
+            text-align: left;
+        }
+
+        .myBody .scale .graphicrow {
+            margin: .5em 0 .5em 0;
+            color: white;
+        }
+
+        .myBody .scale .graphicitem {
+            position: relative;
+        }
+
+        .myBody .scale .graphicitem div {
+            margin: 0 1px;
+            padding: 0 2px;
+            text-align: right;
+            background-color: red;
+            color: white;
+        }
+
+        .myBody .scale .graphicitem:first-child div {
+            margin-left: 0px;
+        }
+
+        .myBody .scale .graphicitem:last-child div {
+            margin-right: 0px;
+        }
+
+        .myBody .scale .graphicitem .lastlabel {
+            position: absolute;
+            top: 0px;
+            left: 100%;
+            background-color: transparent;
+            color: red;
+        }
+
+        .myBody a.matchresult {
+            display: block;
+            margin: 0;
+            padding: 0;
+        }
+
+        .myBody div.matchrow {
+            margin-top: 4px;
+        }
+
+        .myBody div.matchrow, div.matchitem {
+            height: 4px;
+        }
+
+
+        .myBody table.descriptiontable {
+            font-size: 85%;
+            border: 1px solid #97b0c8;
+            border-spacing: 0;
+            color: #222222;
+            line-height: 1.3em;
+            background-color: white;
+        }
+
+        .myBody table.descriptiontable col:first-child {
+            width: 100%;
+        }
+
+        .myBody table.descriptiontable tr:hover {
+            background-color: #D5DEE3;
+        }
+
+        .myBody table.descriptiontable th {
+            color: #14376C;
+            font-weight: normal;
+            background-color: #F0F0F0;
+            background: linear-gradient(#FFFFFF, #F0F0F0);
+            border-bottom: 1px solid #D4DFE9;
+            border-right: 1px solid #CFCFCF;
+            border-left: 0px solid black;
+            border-top: 0px solid black;
+        }
+
+        .myBody table.descriptiontable td {
+            overflow: hidden;
+            text-align: center;
+            padding: .4em .8em;
+        }
+
+        .myBody table.descriptiontable td div {
+            width: 1em;
+            overflow: visible;
+            white-space: nowrap;
+            text-align: left;
+        }
+
+
+        .myBody .alignments .white {
+            padding: 1.5em 1em;
+        }
+
+        .myBody .alignment {
+            border-top: 1px solid black;
+            padding-left: 1em;
+            padding-right: 1em;
+        }
+
+        .myBody div.linkheader {
+            padding-top: .2em;
+            font-size: 85%;
+            color: #14376C;
+        }
+
+        .myBody div.linkheader a.linkheader {
+            margin-right: 1em;
+        }
+
+        .myBody div.linkheader .right a {
+            text-decoration: none;
+        }
+
+        .myBody .title .hittitle {
+            color: #222222;
+            margin-bottom: .3em;
+        }
+
+        .myBody .title .titleinfo {
+            font-size: 80%;
+            margin-top: 0;
+            margin-bottom: .3em;
+        }
+
+        .myBody .title .titleinfo .b {
+            color: #606060;
+            font-weight: bold;
+            font-size: 90%;
+        }
+
+        .myBody .moretitles {
+            margin: 1.2em;
+        }
+
+        .myBody .moretitles .titleinfo {
+            margin: 0;
+            padding: 0;
+        }
+
+        .myBody .moretitles .hittitle {
+            margin: .4em 0 .2em 0;
+            padding: 0;
+        }
+
+        .myBody a.showmoretitles {
+            font-size: 75%;
+            color: #336699;
+            font-weight: bold;
+            margin-top: 0;
+        }
+
+        .myBody a.showmoretitles:hover {
+        }
+
+        .myBody .hotspot {
+            color: #606060;
+            font-family: verdana, arial, sans-serif;
+            margin-bottom: 2.5em;
+        }
+
+        .myBody.hotspot p.range {
+            font-size: 70%;
+            margin-top: 0;
+            margin-top: 1em;
+            margin-bottom: .2em;
+        }
+
+        .myBody .hotspot p.range span.range {
+            font-weight: bold;
+        }
+
+        .myBody .hotspot p.range a.range {
+            margin-left: .5em;
+        }
+
+        .myBody table.hotspotstable {
+            border-top: 1px solid;
+            border-bottom: 1px solid;
+            text-align: left;
+            border-collapse: collapse;
+        }
+
+        .myBody table.hotspotstable th,.myBody table.hotspotstable td {
+            padding: .1em 1em;
+        }
+
+        .myBody table.hotspotstable th {
+            font-size: 70%;
+        }
+
+        .myBody table.hotspotstable td {
+            min-width: 7em;
+            color: #222222;
+            font-size: 80%;
+        }
+
+        .myBody pre.alignmentgraphic {
+            color: #222222;
+        }
+
+        .myBody footer {
+            text-align: center;
+            color: #cccccc;
+            font-size: 70%;
+            margin-top: 1em;
+        }
+
+        .myBody footer :link {
+            color: #5588cc;
+        }
+
+    </style>
+
+    <script type="text/javascript">
+        function toggle_visibility(id) {
+            var e = document.getElementById(id);
+            if (e.style.display != 'block')
+                e.style.display = 'block';
+            else
+                e.style.display = 'none';
+        }
+    </script>
+
+</head>
+
+
+<body class="body1">
+
+<div id="strip_html_warning">
+    <!-- This div should be hidden by the header css block. Galaxy
+    strips all css, breaking this page but making this warning
+    visible. This warning contains some ugly old skool tabular html
+    layout that is not stripped. -->
+    <table bgcolor="#FFE5C9" frame="border">
+        <tr>
+            <td><font color="red"><b>
+                <font size=5>
+                    <center>This html page seems to have been stripped by Galaxy.</center>
+                </font></font>
+                Disable Galaxy's html sanitization feature to view the full page (see <font face=monospace>sanitize_all_html</font>
+                in your galaxy's universe_wsgi.ini), or download this page instead of viewing it in Galaxy.
+                </b></td>
+        </tr>
+    </table>
+</div>
+
+<div class="myBody">
+
+    <div id=content>
+
+        <section class=header>
+
+            <h1>Nucleotide Blast results</h1>
+
+            <table class=headerdata>
+                {% for param, value in params %}
+                <tr>
+                    <td class=param>{{param}}:</td>
+                    <td>{{value}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+
+        </section>
+
+        {% if not blast.BlastOutput_iterations.findall('Iteration') %}
+        <section class=nodata>
+            <h2>No data</h2>
+            <div class=grey>
+                No matches
+            </div>
+        </section>
+
+        {% else %}
+
+        {% if blast.BlastOutput_iterations.findall('Iteration') | length > 1 %}
+        <section class=index>
+            <h2>Queries</h2>
+
+            {% for result in blast.BlastOutput_iterations.Iteration %}
+            <div class=indexentry><a href="#match{{result|nodeid}}">
+                {{result['Iteration_query-ID']}}: {{result['Iteration_query-def']}}
+                ({{result|len}} letters, {{result|hits|length}} hits)
+            </a></div>
+            {% endfor %}
+
+        </section>
+        {% endif %}
+
+        {% for result in blast.BlastOutput_iterations.Iteration %}
+
+        <section class=match id=match{{result|nodeid}}>
+
+            <h2>Nucleotide Sequence ({{result|len}} letters)</h2>
+
+            <section class=header>
+
+                <table class=headerdata>
+                    {% for param, value in result|params %}
+                    <tr>
+                        <td class=param>{{param}}:</td>
+                        <td>{{value}}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+
+            </section>
+
+            {% set hits = result|hits %}
+            {% if not hits %}
+            <section>
+                <h3>No Hits</h3>
+                <div class=grey>
+                    <table class=headerdata>
+                        <tr>
+                            <td class=param>Message:</td>
+                            <td>{{result.Iteration_message}}</td>
+                        </tr>
+                    </table>
+                </div>
+            </section>
+            {% else %}
+
+            <section class=graphics>
+                <h3>Graphic Summary</h3>
+
+                <div class=grey>
+                    <h4 class=centered>Distribution of {{result|length}} Blast Hits on the Query Sequence</h4>
+
+                    <div class=defline id=defline{{result|nodeid}}>
+                        Mouse-over to show defline and scores, click to show alignments
+                    </div>
+
+                    <div class=graphic>
+                        <h5 class=darkHeader>Color key for alignment scores</h5>
+                        <div class=legend>
+                            <div class=graphicrow>
+                                <div class=graphicitem style="background-color: {{colors[0]}}">&lt;40</div>
+                                <div class=graphicitem style="background-color: {{colors[1]}}">40–50</div>
+                                <div class=graphicitem style="background-color: {{colors[2]}}">50–80</div>
+                                <div class=graphicitem style="background-color: {{colors[3]}}">80–200</div>
+                                <div class=graphicitem style="background-color: {{colors[4]}}">≥200</div>
+                            </div>
+                        </div>
+                        <div style="clear: left"></div>
+
+                        <div class=tablewrapper>
+
+                            <div class=scale>
+                                <div>query:</div>
+                                <div class=graphicrow>
+                                    <div>
+                                        {% for s in result|queryscale %}
+                                        <div class=graphicitem style="width: {{s.width|numfmt}}%">
+                                            {% if s.width > 3.0 %}
+                                            <div>{{s.label}}</div>
+                                            {% else %}
+                                            <div>&nbsp;</div>
+                                            <div class=lastlabel>{{s.label}}</div>
+                                            {% endif %}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div style="clear: left"></div>
+                            </div>
+
+                            {% for line in result|match_colors %}
+                            <a class=matchresult
+                               href="#hit{{line.hit|nodeid}}"
+                               onmouseover='document.getElementById("defline{{result|nodeid}}").innerHTML="{{line.defline|js_string_escape}}"'
+                               onmouseout='document.getElementById("defline{{result|nodeid}}").innerHTML="Mouse-over to show defline and scores, click to show alignments"'
+                               title="{{line.defline}}">
+                                <div class="matchrow graphicrow">
+                                    {% for hit in line.colors %}
+                                    <div class="matchitem graphicitem"
+                                         style="background-color: {{hit[1]}}; width: {{hit[0]|numfmt}}%"></div>
+                                    {% endfor %}
+                                </div>
+                            </a>
+
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <section class=descriptions>
+                <h3>Descriptions</h3>
+
+                <div class=grey>
+                    <div class=white>
+                        <h5 class=darkHeader>Sequences producing significant alignments:</h5>
+
+                        <table class=descriptiontable>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <col/>
+                            <tr>
+                                <th>Description</th>
+                                <th>Max score</th>
+                                <th>Total score</th>
+                                <th>Query cover</th>
+                                <th>E value</th>
+                                <th>Ident</th>
+                                <th>Accession</th>
+                            </tr>
+                            {% for hit in result|hit_info %}
+                            <tr>
+                                <td>
+                                    <div><a href="#hit{{hit.hit|nodeid}}"
+                                            title="{{hit.title}}"
+                                            id="description{{hit.hit|nodeid}}">
+                                        {{hit.title}}
+                                    </a></div>
+                                </td>
+                                <td>{{hit.maxscore}}</td>
+                                <td>{{hit.totalscore}}</td>
+                                <td>{{hit.cover}}</td>
+                                <td>{{hit.e_value}}</td>
+                                <td>{{hit.ident}}</td>
+                                <td>{{hit.hit|genelink(hit.hit.Hit_accession)}}</td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+
+                    </div>
+                </div>
+            </section>
+
+
+            <section class=alignments>
+                <h3>Alignments</h3>
+
+                <div class=grey>
+                    <div class=white>
+                        {% for hit in hits %}
+                        <div class=alignment id=hit{{hit|nodeid}}>
+
+                            <div class=linkheader>
+                                <div class=right><a href="#description{{hit|nodeid}}">Descriptions</a></div>
+                                {{ hit|genelink(text_from='dbname', cssclass='linkheader', display_nolink=False) }}
+                            </div>
+
+                            <div class=title>
+                                <p class=hittitle>{{hit|firsttitle}}</p>
+                                <p class=titleinfo>
+                                    <span class=b>Sequence ID:</span> {{ hit|genelink }}
+                                    <span class=b>Length:</span> {{hit.Hit_len}}
+                                    <span class=b>Number of Matches:</span> {{hit.Hit_hsps.Hsp|length}}
+                                </p>
+                            </div>
+
+                            {% if hit|othertitles|length %}
+                            <a class=showmoretitles
+                               onclick="toggle_visibility('moretitles{{hit|nodeid|js_string_escape}}'); return false;"
+                               href=''>
+                                See {{hit|othertitles|length}} more title(s)
+                            </a>
+
+                            <div class=moretitles id=moretitles{{hit|nodeid}} style="display: none">
+                                {% for title in hit|othertitles %}
+                                <div class=title>
+                                    <p class=hittitle>{{title.Hit_def}}</p>
+                                    <p class=titleinfo>
+                                        <span class=b>Sequence ID:</span> {{ title|genelink }}
+                                    </p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            {% for hsp in hit.Hit_hsps.Hsp %}
+                            <div class=hotspot id=hotspot{{hsp|nodeid}}>
+                                <p class=range>
+                                    <span class=range>Range {{hsp.Hsp_num}}: {{hsp['Hsp_hit-from']}} to {{hsp['Hsp_hit-to']}}</span>
+                                </p>
+
+                                <table class=hotspotstable>
+                                    <tr>
+                                        <th>Score</th>
+                                        <th>Expect</th>
+                                        <th>Identities</th>
+                                        <th>Gaps</th>
+                                        <th>Strand</th>
+                                    </tr>
+                                    <tr>
+                                        <td>{{hsp['Hsp_bit-score']}} bits ({{hsp.Hsp_score}})</td>
+                                        <td>{{hsp.Hsp_evalue}}</td>
+                                        <td>{{ hsp.Hsp_identity }}/{{ hsp|len }} ({{
+                                            ((hsp.Hsp_identity|float)/hsp|len) | fmt('.0%') }})
+                                        </td>
+                                        <td>{{ hsp.Hsp_gaps }}/{{ hsp|len
+                                            }} ({{ ((hsp.Hsp_gaps|float) / hsp|len) | fmt('.0%') }})
+                                        </td>
+                                        <td>{{ hsp['Hsp_query-frame']|asframe }}/{{ hsp['Hsp_hit-frame']|asframe }}</td>
+                                    </tr>
+                                </table>
+
+                                {% for alignment_line in hsp|alignment_pre %}
+                                <pre class=alignmentgraphic>{{alignment_line}}</pre>
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+
+                        </div>
+
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+        </section>
+        {% endfor %}
+        {% endif %}
+
+    </div>
+
+</div>
+<footer>
+    This page was generated by <a href="https://github.com/thehyve/blast2html/">blast2html</a>.
+</footer>
+</body>
+</html>
+
+{#
+Local Variables:
+tab-width: 2
+indent-tabs-mode: nil
+End:
+#}
